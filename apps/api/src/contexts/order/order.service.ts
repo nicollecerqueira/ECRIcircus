@@ -2,10 +2,10 @@ import { randomUUID } from 'node:crypto';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DomainEvent } from '../../common/events/domain-events';
-import { effectivePriceCents } from '../catalog/domain/pricing';
 import { currentTenantOrNull } from '../../common/tenant/tenant-context';
 import { DEMO_LOCATION_ID, DEMO_TENANT_ID } from '../../stub/seed';
 import { CatalogService } from '../catalog/catalog.service';
+import { effectivePriceCents } from '../catalog/domain/pricing';
 import {
   type ItemState,
   type Order,
