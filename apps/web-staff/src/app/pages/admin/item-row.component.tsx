@@ -1,9 +1,64 @@
+import type { ReactNode } from 'react';
 import { useState } from 'react';
-import { Badge, Button } from '../../shared/components/ui';
+import { Badge, Button, IconButton } from '../../shared/components/ui';
 import { formatCents } from '../../shared/utils/money';
 import type { MenuItem } from '../order/order.model';
 import { centsToPrice, priceToCents } from './admin.model';
 import { useDeleteMenuItem, useUpdateMenuItem } from './admin.service';
+
+/** Ícone base 16px, traço em currentColor — herda a cor do IconButton. */
+function Icon({ children }: { children: ReactNode }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {children}
+    </svg>
+  );
+}
+
+const PencilIcon = () => (
+  <Icon>
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+  </Icon>
+);
+const TagIcon = () => (
+  <Icon>
+    <path d="M20.59 13.41 13.42 20.6a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82Z" />
+    <path d="M7 7h.01" />
+  </Icon>
+);
+const EyeIcon = () => (
+  <Icon>
+    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+    <circle cx="12" cy="12" r="3" />
+  </Icon>
+);
+const EyeOffIcon = () => (
+  <Icon>
+    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c6.5 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+    <path d="M6.61 6.61A13.5 13.5 0 0 0 2 12s3.5 7 10 7a9.12 9.12 0 0 0 5.39-1.61" />
+    <path d="m9.9 9.9a3 3 0 0 0 4.2 4.2" />
+    <path d="M2 2l20 20" />
+  </Icon>
+);
+const TrashIcon = () => (
+  <Icon>
+    <path d="M3 6h18" />
+    <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" />
+    <path d="M19 6v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6" />
+    <path d="M10 11v6M14 11v6" />
+  </Icon>
+);
 
 /**
  * Linha do cardápio com edição inline (nome/preço) e controle de promoção.
@@ -93,47 +148,40 @@ export function ItemRow({ item }: { item: MenuItem }) {
           )}
           {item.onPromo && <Badge tone="danger">promo</Badge>}
         </span>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Badge tone={item.available ? 'success' : 'neutral'}>
             {item.available ? 'Disponível' : 'Indisponível'}
           </Badge>
-          <button
-            type="button"
-            className="text-xs text-primary hover:underline"
-            onClick={() => setEditing(true)}
-          >
-            editar
-          </button>
-          <button
-            type="button"
-            aria-pressed={promoOpen}
-            className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium transition ${
-              item.onPromo
-                ? 'border-danger/40 bg-danger/10 text-danger'
-                : 'border-accent/50 text-accent hover:bg-accent/10'
-            }`}
-            onClick={() => setPromoOpen((v) => !v)}
-          >
-            {item.onPromo ? 'promoção ativa' : '+ promoção'}
-          </button>
-          <button
-            type="button"
-            className="text-xs text-muted hover:underline"
-            onClick={() => update.mutate({ itemId: item.id, available: !item.available })}
-          >
-            {item.available ? 'esgotar' : 'reativar'}
-          </button>
-          <button
-            type="button"
-            className="text-xs text-danger hover:underline"
-            onClick={() => {
-              if (window.confirm(`Excluir "${item.name}" do cardápio?`)) {
-                remove.mutate(item.id);
-              }
-            }}
-          >
-            excluir
-          </button>
+          <div className="flex items-center gap-0.5">
+            <IconButton label="Editar" onClick={() => setEditing(true)}>
+              <PencilIcon />
+            </IconButton>
+            <IconButton
+              label={item.onPromo ? 'Promoção ativa' : 'Criar promoção'}
+              active={promoOpen || item.onPromo}
+              onClick={() => setPromoOpen((v) => !v)}
+            >
+              <TagIcon />
+            </IconButton>
+            <IconButton
+              label={item.available ? 'Marcar como esgotado' : 'Reativar'}
+              disabled={update.isPending}
+              onClick={() => update.mutate({ itemId: item.id, available: !item.available })}
+            >
+              {item.available ? <EyeOffIcon /> : <EyeIcon />}
+            </IconButton>
+            <IconButton
+              label="Excluir do cardápio"
+              tone="danger"
+              onClick={() => {
+                if (window.confirm(`Excluir "${item.name}" do cardápio?`)) {
+                  remove.mutate(item.id);
+                }
+              }}
+            >
+              <TrashIcon />
+            </IconButton>
+          </div>
         </div>
       </div>
 
