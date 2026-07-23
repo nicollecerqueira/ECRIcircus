@@ -10,6 +10,8 @@ export type Station = z.infer<typeof stationSchema>;
 export const ticketSchema = z.object({
   orderId: z.string(),
   tableId: z.string().optional(),
+  /** Rótulo humano já resolvido pelo servidor (ex.: "Mesa 3"). */
+  tableLabel: z.string().optional(),
   channel: z.string(),
   itemId: z.string(),
   name: z.string(),

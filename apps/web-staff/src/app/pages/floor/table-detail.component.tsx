@@ -8,16 +8,22 @@ import {
   orderTotalCents,
 } from '../order/order.model';
 import { useCreateOrder, useOrders } from '../order/order.service';
+import { useTables } from './floor.service';
 
 export function TableDetailComponent() {
   const { id } = useParams({ from: '/shell/floor/table/$id' });
   const navigate = useNavigate();
   const { data: orders, isPending } = useOrders();
+  const { data: tables } = useTables();
   const createOrder = useCreateOrder();
 
   if (isPending) {
     return <Spinner />;
   }
+
+  // Número humano vem da mesa (o id agora é UUID); cai no id só se ainda carregando.
+  const table = tables?.find((t) => t.id === id);
+  const tableLabel = table ? `Mesa ${table.number}` : 'Mesa';
 
   // O backend garante uma conta aberta por mesa, então aqui há 0 ou 1.
   const openOrder = (orders ?? []).find((o) => o.tableId === id && isActiveOrder(o));
@@ -26,7 +32,7 @@ export function TableDetailComponent() {
 
   return (
     <div className="mx-auto max-w-lg p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-bold">Mesa {id.replace('tb-', '')}</h1>
+      <h1 className="mb-4 text-xl font-bold">{tableLabel}</h1>
 
       {openOrder ? (
         <Card>

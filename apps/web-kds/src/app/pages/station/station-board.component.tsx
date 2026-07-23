@@ -26,9 +26,7 @@ function TicketCard({ ticket, onTap }: { ticket: Ticket; onTap: () => void }) {
         </span>
         <span className="text-lg text-muted">{mins}min</span>
       </div>
-      <p className="mt-1 text-sm text-muted">
-        {ticket.tableId ? `Mesa ${ticket.tableId.replace('tb-', '')}` : ticket.channel}
-      </p>
+      <p className="mt-1 text-sm text-muted">{ticket.tableLabel ?? ticket.channel}</p>
       {ticket.notes && <p className="mt-2 text-base">📝 {ticket.notes}</p>}
       <p className="mt-3 text-lg font-semibold text-primary">
         {ticket.state === 'queued' ? 'Toque = Preparar' : 'Toque = Pronto ✓'}
