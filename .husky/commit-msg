@@ -1,0 +1,8 @@
+# Conventional Commits enforcement (feat|fix|chore|docs|refactor|test|style)
+msg_file="$1"
+pattern='^(feat|fix|chore|docs|refactor|test|style)(\([a-z0-9 _-]+\))?!?: .{1,}'
+if ! grep -qE "$pattern" "$msg_file"; then
+  echo "✖ Commit message must follow Conventional Commits."
+  echo "  e.g. feat(order): fire item to kitchen station"
+  exit 1
+fi

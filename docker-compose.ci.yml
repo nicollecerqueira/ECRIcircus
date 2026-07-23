@@ -1,0 +1,39 @@
+# Full-Docker stack for Playwright E2E (mirrors Nexus docker-compose.ci.yml).
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: prato
+      POSTGRES_PASSWORD: prato
+      POSTGRES_DB: prato_ci
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prato -d prato_ci"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: ./apps/api
+    environment:
+      NODE_ENV: test
+      PORT: 3000
+      DATABASE_URL: postgres://prato:prato@postgres:5432/prato_ci
+      REDIS_URL: redis://redis:6379
+      JWT_ACCESS_SECRET: ci-access-secret
+      JWT_REFRESH_SECRET: ci-refresh-secret
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "3000:3000"

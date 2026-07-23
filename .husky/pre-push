@@ -1,0 +1,8 @@
+# Validate branch name against the allowed pattern before pushing.
+branch=$(git rev-parse --abbrev-ref HEAD)
+pattern='^(main|develop|(feature|fix|hotfix)/[a-z0-9._-]+)$'
+if ! echo "$branch" | grep -qE "$pattern"; then
+  echo "✖ Branch '$branch' is invalid."
+  echo "  Use: main | develop | feature/<name> | fix/<name> | hotfix/<name>"
+  exit 1
+fi

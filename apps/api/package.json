@@ -1,0 +1,58 @@
+{
+  "name": "@prato/api",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Prato API — NestJS 11 + MikroORM + Postgres + Redis + WebSocket gateway",
+  "scripts": {
+    "dev": "nest start --watch",
+    "build": "nest build",
+    "start": "node dist/main.js",
+    "biome": "biome",
+    "typecheck": "tsc --noEmit",
+    "orm": "mikro-orm"
+  },
+  "dependencies": {
+    "@mikro-orm/core": "^6.4.0",
+    "@mikro-orm/migrations": "^6.4.0",
+    "@mikro-orm/nestjs": "^6.1.0",
+    "@mikro-orm/postgresql": "^6.4.0",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/config": "^4.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/event-emitter": "^3.0.0",
+    "@nestjs/jwt": "^11.0.0",
+    "@nestjs/passport": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/platform-socket.io": "^11.0.0",
+    "@nestjs/websockets": "^11.0.0",
+    "@socket.io/redis-adapter": "^8.3.0",
+    "bcryptjs": "^2.4.3",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "ioredis": "^5.4.0",
+    "nestjs-pino": "^4.1.0",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "pino-http": "^10.3.0",
+    "pino-pretty": "^13.0.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "socket.io": "^4.8.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.0.0",
+    "@nestjs/cli": "^11.0.0",
+    "@nestjs/schematics": "^11.0.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.0.0",
+    "@types/passport-jwt": "^4.0.1",
+    "typescript": "^5.6.0"
+  },
+  "packageManager": "pnpm@10.0.0",
+  "mikro-orm": {
+    "configPaths": [
+      "./dist/mikro-orm.config.js",
+      "./src/mikro-orm.config.ts"
+    ]
+  }
+}

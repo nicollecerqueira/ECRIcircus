@@ -1,0 +1,14 @@
+{
+  "name": "@prato/e2e",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Prato end-to-end tests (Playwright) — the sole test layer (Avenir standard)",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}

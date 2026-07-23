@@ -1,0 +1,9 @@
+# Lint staged apps with Biome (each app owns its own config).
+# Fast path: only run Biome on the apps that have changed files.
+changed=$(git diff --cached --name-only)
+for app in api web-staff web-kds web-order; do
+  if echo "$changed" | grep -q "^apps/$app/"; then
+    echo "▶ biome check apps/$app"
+    (cd "apps/$app" && pnpm biome check --staged --no-errors-on-unmatched) || exit 1
+  fi
+done

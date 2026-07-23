@@ -1,0 +1,72 @@
+@import 'tailwindcss';
+
+/* Paleta "Preto & Dourado" — mesma identidade de web-staff / web-order
+   (marfim, grafite, dourado), COM UMA EXCEÇÃO DELIBERADA:
+
+   as cores de status (success/warning/danger) aqui são SATURADAS, não as
+   versões sóbrias do salão. O envelhecimento das comandas (verde → âmbar →
+   vermelho) é lido a metros de distância, sob luz ruim, às vezes de relance.
+   Legibilidade funcional ganha de elegância nesta tela — e só nesta.
+
+   Regras da paleta (dourado só em detalhe; primária inverte entre claro e
+   escuro): ver a nota completa em web-staff/src/styles.css. */
+@theme {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
+  --color-accent: var(--accent);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+}
+
+:root {
+  --bg: #f9f8f5;
+  --surface: #ffffff;
+  --surface-2: #f0eee9;
+  --fg: #121110;
+  --muted: #77726b;
+  --border: #e7e4de;
+  --primary: #1a1917;
+  --primary-fg: #f9f8f5;
+  --accent: #8a6b22;
+  /* Status vivos (ver nota acima) */
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f0e0d;
+    --surface: #1a1917;
+    --surface-2: #24221f;
+    --fg: #f2efe9;
+    --muted: #9a948b;
+    --border: #2a2723;
+    --primary: #d4b45f;
+    --primary-fg: #0f0e0d;
+    --accent: #d4b45f;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}

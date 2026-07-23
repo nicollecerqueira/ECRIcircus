@@ -1,0 +1,21 @@
+{
+  "name": "prato",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Prato — multi-tenant restaurant order-to-kitchen-to-payment SaaS (monorepo, polyrepo-in-folder). Root is tooling-only; each app under apps/* is independent.",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=10"
+  },
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "dev": "node tools/dev.mjs",
+    "check-all": "bash tools/check-all.sh",
+    "up": "docker compose -f docker-compose.dev.yml up -d",
+    "down": "docker compose -f docker-compose.dev.yml down",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}

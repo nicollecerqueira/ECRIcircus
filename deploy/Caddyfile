@@ -1,0 +1,34 @@
+# Reverse-proxy sketch. Host-based tenant routing; /api and /realtime -> api.
+# WebSocket upgrade is handled transparently by Caddy's reverse_proxy.
+
+*.prato.app {
+	tls {
+		on_demand
+	}
+
+	# API + real-time gateway
+	handle /api/* {
+		reverse_proxy api:3000
+	}
+	handle /realtime/* {
+		reverse_proxy api:3000
+	}
+
+	# Public diner surface (QR + storefront)
+	handle /d/* {
+		reverse_proxy web-order:80
+	}
+	handle /t/* {
+		reverse_proxy web-order:80
+	}
+
+	# Authenticated staff back-of-house (default)
+	handle {
+		reverse_proxy web-staff:80
+	}
+}
+
+# Kitchen display on its own host per location deployment.
+kds.prato.app {
+	reverse_proxy web-kds:80
+}
