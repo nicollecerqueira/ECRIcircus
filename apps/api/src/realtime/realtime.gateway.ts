@@ -10,6 +10,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { JwtClaims } from '../auth/jwt.strategy';
+import { DINER_ROLE } from '../auth/roles';
 import {
   DomainEvent,
   type ItemFiredPayload,
@@ -101,10 +102,9 @@ export class RealtimeGateway implements OnGatewayConnection {
   }
 
   private resolveScope(token: string): SocketScope {
-    if (token.startsWith('d_')) {
-      return { tenantId: DEMO_TENANT_ID, locationId: DEMO_LOCATION_ID, isDiner: true };
-    }
     try {
+      // Staff e diner usam o MESMO fluxo: um JWT assinado. O diner se distingue
+      // pelo papel — e o escopo (tenant/location) vem das claims, nunca fixo.
       const claims = this.jwt.verify<JwtClaims>(token, {
         secret: this.config.get<string>('JWT_ACCESS_SECRET'),
       });
@@ -112,7 +112,7 @@ export class RealtimeGateway implements OnGatewayConnection {
         tenantId: claims.tenantId,
         locationId: claims.locationId ?? DEMO_LOCATION_ID,
         role: claims.role,
-        isDiner: false,
+        isDiner: claims.role === DINER_ROLE,
       };
     } catch {
       // Skeleton fallback: attach to the demo tenant so local dev "just works".

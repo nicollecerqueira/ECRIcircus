@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
-import { Role } from '../../auth/roles';
+import { ALL_ROLES, Role } from '../../auth/roles';
 import { Roles } from '../../auth/roles.decorator';
 import { PaymentMethod } from '../order/order.model';
 import { PaymentService } from './payment.service';
@@ -30,11 +30,13 @@ export class PaymentController {
     return this.payments.register(id, dto);
   }
 
+  @Roles(...ALL_ROLES)
   @Get('split')
   splitEvenly(@Param('id') id: string, @Query('parts') parts: string) {
     return this.payments.splitEvenly(id, Number(parts) || 2);
   }
 
+  @Roles(...ALL_ROLES)
   @Get('receipt')
   receipt(@Param('id') id: string) {
     return this.payments.receipt(id);

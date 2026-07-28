@@ -8,16 +8,19 @@ import { OrderService } from '../order/order.service';
 export class PaymentService {
   constructor(private readonly orders: OrderService) {}
 
-  register(orderId: string, input: { method: PaymentMethod; amountCents: number; note?: string }) {
-    const order = this.orders.addPayment(orderId, input);
+  async register(
+    orderId: string,
+    input: { method: PaymentMethod; amountCents: number; note?: string },
+  ) {
+    const order = await this.orders.addPayment(orderId, input);
     const total = orderTotalCents(order);
     const paid = paidCents(order);
     return { order, totalCents: total, paidCents: paid, remainingCents: total - paid };
   }
 
   /** Even split preview (total ÷ N), remainder distributed to the first shares. */
-  splitEvenly(orderId: string, parts: number) {
-    const order = this.orders.get(orderId);
+  async splitEvenly(orderId: string, parts: number) {
+    const order = await this.orders.get(orderId);
     const total = orderTotalCents(order);
     const base = Math.floor(total / parts);
     const remainder = total - base * parts;
@@ -26,8 +29,8 @@ export class PaymentService {
   }
 
   /** Non-fiscal receipt payload. Explicitly NOT a tax document. */
-  receipt(orderId: string) {
-    const order = this.orders.get(orderId);
+  async receipt(orderId: string) {
+    const order = await this.orders.get(orderId);
     return {
       fiscal: false,
       orderId: order.id,

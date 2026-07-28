@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { realtime } from '../../core/realtime.service';
 import { Badge, Button, Card, Spinner } from '../../shared/components/ui';
 import { formatCents } from '../../shared/utils/money';
+import { useTables } from '../floor/floor.service';
 import { ITEM_STATE_LABEL, ITEM_STATE_TONE, orderTotalCents } from './order.model';
 import { useAddItem, useMenu, useOrder, useVoidItem } from './order.service';
 
@@ -11,6 +12,7 @@ export function OrderComponent() {
   const navigate = useNavigate();
   const { data: order, isPending } = useOrder(id);
   const { data: menu } = useMenu();
+  const { data: tables } = useTables();
   const addItem = useAddItem(id);
   const voidItem = useVoidItem(id);
 
@@ -29,7 +31,10 @@ export function OrderComponent() {
       <section>
         <div className="mb-4 flex items-center justify-between">
           <h1 className="text-xl font-bold">
-            Pedido {order.tableId ? `· Mesa ${order.tableId.replace('tb-', '')}` : ''}
+            Pedido
+            {order.tableId
+              ? ` · Mesa ${tables?.find((t) => t.id === order.tableId)?.number ?? ''}`
+              : ''}
           </h1>
           <Badge tone="primary">{order.status}</Badge>
         </div>

@@ -1,63 +1,149 @@
-import { randomUUID } from 'node:crypto';
+import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DEMO_LOCATION_ID, DEMO_TENANT_ID, TABLES } from '../../stub/seed';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import type { JwtClaims } from '../../auth/jwt.strategy';
+import { DINER_ROLE } from '../../auth/roles';
+import { currentTenant } from '../../common/tenant/tenant-context';
+import { Table, type TableStatus } from './domain/table.entity';
+import { TableSession } from './domain/table-session.entity';
 
-type TableStatus = 'open' | 'occupied' | 'dirty';
-
-interface Session {
+export interface TableView {
   id: string;
-  tableId: string;
-  openedAt: string;
+  number: number;
+  seats: number;
+  status: TableStatus;
+  sessionId?: string;
+  qrToken: string;
 }
 
-// Table & Session context. QR binding: each table has a stable qrToken that maps
-// to {location, table}; scanning opens/attaches to that table's session.
+// Table & Session context (Fase 3, Postgres). QR binding: cada mesa tem um
+// qrToken estável que mapeia {location, table}; escanear abre/anexa a sessão.
 @Injectable()
 export class SessionService {
-  private status = new Map<string, TableStatus>(TABLES.map((t) => [t.id, 'open']));
-  private sessions = new Map<string, Session>(); // by tableId
+  constructor(
+    private readonly em: EntityManager,
+    private readonly jwt: JwtService,
+    private readonly config: ConfigService,
+  ) {}
 
-  floor() {
-    return TABLES.map((t) => ({
-      ...t,
-      status: this.status.get(t.id) ?? 'open',
-      sessionId: this.sessions.get(t.id)?.id,
-      // qrToken encodes {location, table} — here a deterministic stub value.
-      qrToken: `q_${t.id}`,
+  /** Salão da unidade atual: mesas + id da sessão aberta (quando houver). */
+  async floor(): Promise<TableView[]> {
+    const ctx = currentTenant();
+    // Filtro global já recorta por tenant; refinamos pela unidade do usuário.
+    const where = ctx.locationId ? { location: ctx.locationId } : {};
+    const tables = await this.em.find(Table, where, { orderBy: { number: 'asc' } });
+    const openSessions = await this.em.find(TableSession, { closedAt: null });
+    const openByTable = new Map(openSessions.map((s) => [s.table.id, s.id]));
+    return tables.map((t) => ({
+      id: t.id,
+      number: t.number,
+      seats: t.seats,
+      status: t.status,
+      sessionId: openByTable.get(t.id),
+      qrToken: t.qrToken,
     }));
   }
 
-  openSession(tableId: string): Session {
-    const table = TABLES.find((t) => t.id === tableId);
+  /** Abre a sessão da mesa (idempotente: se já há uma aberta, devolve ela). */
+  async openSession(tableId: string): Promise<{ id: string; tableId: string; openedAt: string }> {
+    const table = await this.em.findOne(Table, { id: tableId });
     if (!table) {
       throw new NotFoundException('Mesa não encontrada');
     }
-    let session = this.sessions.get(tableId);
-    if (!session) {
-      session = { id: randomUUID(), tableId, openedAt: new Date().toISOString() };
-      this.sessions.set(tableId, session);
-      this.status.set(tableId, 'occupied');
-    }
-    return session;
+    const session = await this.attachOpenSession(table);
+    return { id: session.id, tableId: table.id, openedAt: session.openedAt.toISOString() };
   }
 
-  /** Resolve a scanned QR token: open/attach the table session for a diner. */
-  resolveQr(qrToken: string) {
-    const tableId = qrToken.replace(/^q_/, '');
-    const session = this.openSession(tableId);
-    return {
-      tenantId: DEMO_TENANT_ID,
-      locationId: DEMO_LOCATION_ID,
-      tableId,
+  /** Fecha a sessão aberta e marca a mesa como "a limpar". */
+  async closeSession(tableId: string): Promise<{ tableId: string; status: TableStatus }> {
+    const table = await this.em.findOne(Table, { id: tableId });
+    if (!table) {
+      throw new NotFoundException('Mesa não encontrada');
+    }
+    const session = await this.em.findOne(TableSession, { table, closedAt: null });
+    if (session) {
+      session.closedAt = new Date();
+    }
+    table.status = 'dirty';
+    await this.em.flush();
+    return { tableId: table.id, status: table.status };
+  }
+
+  /**
+   * Público (QR): resolve o token → mesa e abre/anexa a sessão. Não há JWT, logo
+   * não há contexto de tenant na requisição — resolvemos a marca a partir da
+   * própria mesa (`filters: false`, escopo derivado do dado, como o cardápio
+   * público faz no Catalog).
+   */
+  async resolveQr(qrToken: string) {
+    const table = await this.em.findOne(
+      Table,
+      { qrToken },
+      { filters: false, populate: ['tenant', 'location'] },
+    );
+    if (!table) {
+      throw new NotFoundException('QR inválido');
+    }
+    const session = await this.attachOpenSession(table, { skipFilters: true });
+    // JWT de diner assinado: carrega tenant/location/mesa/sessão. O JwtStrategy
+    // valida a assinatura (sem tocar no banco) e o TenantInterceptor monta o
+    // contexto a partir dele — então o pedido do QR já nasce na marca certa.
+    const claims: JwtClaims = {
+      sub: session.id,
+      tenantId: table.tenant.id,
+      locationId: table.location.id,
+      role: DINER_ROLE,
+      tableId: table.id,
       sessionId: session.id,
-      // short-lived, table-scoped diner token (stub). Real impl signs a JWT.
-      dinerToken: `d_${session.id}`,
+    };
+    const dinerToken = this.jwt.sign(claims, {
+      secret: this.config.get<string>('JWT_ACCESS_SECRET'),
+      // Vale por algumas horas (em segundos) — a duração típica de uma refeição.
+      expiresIn: Number(this.config.get('JWT_DINER_TTL')) || 6 * 3600,
+    });
+    return {
+      tenantId: table.tenant.id,
+      locationId: table.location.id,
+      tableId: table.id,
+      sessionId: session.id,
+      dinerToken,
     };
   }
 
-  closeSession(tableId: string) {
-    this.sessions.delete(tableId);
-    this.status.set(tableId, 'dirty');
-    return { tableId, status: 'dirty' as TableStatus };
+  /**
+   * Mapa id→número das mesas, para rótulos humanos em outros contextos (ex.: o
+   * KDS, que é outro app e não tem acesso ao /tables). Escopado por tenant.
+   */
+  async tableNumbers(ids: string[]): Promise<Map<string, number>> {
+    if (ids.length === 0) {
+      return new Map();
+    }
+    const tables = await this.em.find(Table, { id: { $in: ids } });
+    return new Map(tables.map((t) => [t.id, t.number]));
+  }
+
+  /** Sessão aberta da mesa, criando uma se não existir. Centraliza a regra. */
+  private async attachOpenSession(
+    table: Table,
+    opts: { skipFilters?: boolean } = {},
+  ): Promise<TableSession> {
+    const existing = await this.em.findOne(
+      TableSession,
+      { table, closedAt: null },
+      { filters: !opts.skipFilters },
+    );
+    if (existing) {
+      return existing;
+    }
+    const session = this.em.create(TableSession, {
+      tenant: table.tenant,
+      table,
+      openedAt: new Date(),
+      createdAt: new Date(),
+    });
+    table.status = 'occupied';
+    await this.em.flush();
+    return session;
   }
 }

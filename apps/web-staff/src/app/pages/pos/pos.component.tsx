@@ -1,11 +1,13 @@
 import { useNavigate } from '@tanstack/react-router';
 import { Badge, Button, Card, Spinner } from '../../shared/components/ui';
 import { formatCents } from '../../shared/utils/money';
+import { useTables } from '../floor/floor.service';
 import { useCreateOrder, useOrders } from '../order/order.service';
 import { billsGrandTotalCents, buildBills } from './pos.model';
 
 export function PosComponent() {
   const { data: orders, isPending } = useOrders();
+  const { data: tables } = useTables();
   const createOrder = useCreateOrder();
   const navigate = useNavigate();
 
@@ -14,7 +16,8 @@ export function PosComponent() {
   }
 
   // Uma conta por mesa (somando seus pedidos), e uma por pedido de balcão/delivery.
-  const bills = buildBills(orders ?? []);
+  const tableNumbers = new Map((tables ?? []).map((t) => [t.id, t.number]));
+  const bills = buildBills(orders ?? [], tableNumbers);
   const grandTotal = billsGrandTotalCents(bills);
 
   return (

@@ -2,14 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { Role } from './roles';
+import { type DinerRole, Role } from './roles';
 
 export interface JwtClaims {
   sub: string;
   tenantId: string;
   locationId?: string;
-  role: Role;
+  /** Papel de staff OU `diner` (cliente do QR — não é um User). */
+  role: Role | DinerRole;
   stationIds?: string[];
+  /** Só no token do diner: mesa e sessão que o QR abriu. */
+  tableId?: string;
+  sessionId?: string;
 }
 
 @Injectable()

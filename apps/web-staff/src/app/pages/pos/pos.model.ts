@@ -20,11 +20,13 @@ export interface Bill {
   primaryOrderId: string;
 }
 
-function tableLabel(tableId: string): string {
-  return `Mesa ${tableId.replace('tb-', '')}`;
+function tableLabel(tableId: string, numberById?: Map<string, number>): string {
+  // O id da mesa é UUID; o número humano vem do mapa carregado de /tables.
+  const number = numberById?.get(tableId);
+  return number ? `Mesa ${number}` : 'Mesa';
 }
 
-export function buildBills(orders: Order[]): Bill[] {
+export function buildBills(orders: Order[], tableNumberById?: Map<string, number>): Bill[] {
   const active = orders.filter(isActiveOrder);
   const byKey = new Map<string, Order[]>();
 
@@ -46,7 +48,7 @@ export function buildBills(orders: Order[]): Bill[] {
       return {
         key,
         label: first.tableId
-          ? tableLabel(first.tableId)
+          ? tableLabel(first.tableId, tableNumberById)
           : first.channel === 'delivery'
             ? 'Delivery'
             : 'Balcão',

@@ -22,6 +22,43 @@ export function Button({ variant = 'primary', className = '', ...props }: Button
   );
 }
 
+type IconButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  /** Texto do tooltip e do aria-label — obrigatório: o botão não tem rótulo visível. */
+  label: string;
+  tone?: 'default' | 'danger';
+  /** Estado "ligado" (ex.: painel aberto, promoção ativa) — realça em accent. */
+  active?: boolean;
+};
+
+/**
+ * Botão só-ícone para as ações de linha. Neutro por padrão para não competir com
+ * o conteúdo; a cor só aparece no hover (ou quando `active`/`danger`).
+ */
+export function IconButton({
+  label,
+  tone = 'default',
+  active = false,
+  className = '',
+  ...props
+}: IconButtonProps) {
+  const toneCls =
+    tone === 'danger'
+      ? 'text-muted hover:bg-danger/10 hover:text-danger'
+      : active
+        ? 'bg-accent/15 text-accent'
+        : 'text-muted hover:bg-surface-2 hover:text-fg';
+  return (
+    <button
+      type="button"
+      title={label}
+      aria-label={label}
+      aria-pressed={active}
+      className={`inline-flex h-8 w-8 items-center justify-center rounded-lg transition disabled:opacity-50 ${toneCls} ${className}`}
+      {...props}
+    />
+  );
+}
+
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
     <div className={`rounded-xl border border-border bg-surface p-4 shadow-sm ${className}`}>

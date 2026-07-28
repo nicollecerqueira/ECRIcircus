@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { Public } from '../../auth/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../../auth/optional-jwt-auth.guard';
-import { Role } from '../../auth/roles';
+import { ALL_ROLES, Role } from '../../auth/roles';
 import { Roles } from '../../auth/roles.decorator';
 import { AddItemDto, CreateOrderDto, VoidItemDto } from './dto';
 import { OrderService } from './order.service';
@@ -10,6 +10,8 @@ import { OrderService } from './order.service';
 export class OrderController {
   constructor(private readonly orders: OrderService) {}
 
+  // Qualquer staff vê a lista da sua unidade — nunca o diner (não está em ALL_ROLES).
+  @Roles(...ALL_ROLES)
   @Get()
   list() {
     return this.orders.list();
@@ -43,6 +45,7 @@ export class OrderController {
     return this.orders.voidItem(id, itemId, dto.reason);
   }
 
+  @Roles(...ALL_ROLES)
   @Post(':id/request-payment')
   requestPayment(@Param('id') id: string) {
     return this.orders.requestPayment(id);
