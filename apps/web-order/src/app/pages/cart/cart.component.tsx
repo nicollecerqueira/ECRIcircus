@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useSession } from '../../core/session.store';
-import { Button, Card } from '../../shared/components/ui';
+import { Button, Card, EmptyState } from '../../shared/components/ui';
 import { formatCents } from '../../shared/utils/money';
 import { useSubmitOrder } from '../order/order.service';
 
@@ -14,12 +14,15 @@ export function CartComponent() {
 
   if (cart.length === 0) {
     return (
-      <div className="mx-auto max-w-lg p-6 text-center">
-        <p className="text-muted">Seu carrinho está vazio.</p>
-        <Button variant="ghost" className="mt-4" onClick={() => navigate({ to: '/menu' })}>
-          Voltar ao cardápio
+      <EmptyState
+        icon="🛒"
+        title="Seu carrinho está vazio"
+        hint="Adicione itens do cardápio para montar seu pedido."
+      >
+        <Button variant="ghost" onClick={() => navigate({ to: '/menu' })}>
+          Ver cardápio
         </Button>
-      </div>
+      </EmptyState>
     );
   }
 

@@ -1,9 +1,17 @@
 import { Link, useParams } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { realtime } from '../../core/realtime.service';
-import { Button, Card, Spinner } from '../../shared/components/ui';
+import { Badge, Button, Card, Spinner } from '../../shared/components/ui';
 import { STATE_LABEL } from '../order/order.model';
 import { useDinerOrder } from '../order/order.service';
+
+/** ready = verde (ação concluída); preparing = dourado (em curso); resto neutro. */
+const STATE_TONE: Record<string, string> = {
+  queued: 'neutral',
+  preparing: 'accent',
+  ready: 'success',
+  served: 'neutral',
+};
 
 /** Live order tracking (`/track/$orderId`). Updates via the diner's order room. */
 export function OrderTrackComponent() {
@@ -30,13 +38,13 @@ export function OrderTrackComponent() {
       </p>
       <Card className="divide-y divide-border p-0">
         {active.map((item) => (
-          <div key={item.id} className="flex items-center justify-between p-3">
+          <div key={item.id} className="flex items-center justify-between gap-3 p-3">
             <span>
               {item.qty}× {item.name}
             </span>
-            <span className="text-sm font-medium text-primary">
+            <Badge tone={STATE_TONE[item.state] ?? 'neutral'}>
               {STATE_LABEL[item.state] ?? item.state}
-            </span>
+            </Badge>
           </div>
         ))}
       </Card>

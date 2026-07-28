@@ -30,3 +30,42 @@ export function Spinner() {
     </div>
   );
 }
+
+const BADGE_TONES: Record<string, string> = {
+  neutral: 'bg-surface-2 text-muted',
+  accent: 'bg-accent/15 text-accent',
+  success: 'bg-success/15 text-success',
+  danger: 'bg-danger/15 text-danger',
+};
+
+export function Badge({ tone = 'neutral', children }: { tone?: string; children: ReactNode }) {
+  return (
+    <span
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${BADGE_TONES[tone] ?? BADGE_TONES.neutral}`}
+    >
+      {children}
+    </span>
+  );
+}
+
+/** Estado vazio/erro consistente: emoji + título + dica opcional. */
+export function EmptyState({
+  icon,
+  title,
+  hint,
+  children,
+}: {
+  icon?: ReactNode;
+  title: string;
+  hint?: string;
+  children?: ReactNode;
+}) {
+  return (
+    <div className="mx-auto max-w-md p-8 text-center">
+      {icon && <div className="mb-3 text-5xl">{icon}</div>}
+      <p className="text-lg font-semibold text-fg">{title}</p>
+      {hint && <p className="mx-auto mt-1 max-w-xs text-sm text-muted">{hint}</p>}
+      {children && <div className="mt-5">{children}</div>}
+    </div>
+  );
+}
