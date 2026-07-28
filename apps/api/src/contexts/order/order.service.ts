@@ -11,7 +11,7 @@ import { Location } from '../tenancy/domain/location.entity';
 import { Order as OrderEntity } from './domain/order.entity';
 import { OrderItem as OrderItemEntity } from './domain/order-item.entity';
 import { Payment as PaymentEntity } from './domain/payment.entity';
-import type { ItemState, Order, OrderChannel, PaymentMethod } from './order.model';
+import type { Order, OrderChannel, PaymentMethod } from './order.model';
 
 /** Entidade → view (o formato plano que Cozinha, Pagamento e os fronts consomem). */
 function toOrderView(o: OrderEntity): Order {

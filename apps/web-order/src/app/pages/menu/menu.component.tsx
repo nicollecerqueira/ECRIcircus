@@ -39,14 +39,18 @@ export function MenuComponent() {
                 {cat.items.map((mi) => (
                   <Card key={mi.id} className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <p className={`flex flex-wrap items-center gap-2 font-medium ${mi.available ? '' : 'text-muted'}`}>
+                      <p
+                        className={`flex flex-wrap items-center gap-2 font-medium ${mi.available ? '' : 'text-muted'}`}
+                      >
                         <span className={mi.available ? '' : 'line-through'}>{mi.name}</span>
                         {mi.onPromo && <Badge tone="danger">promo</Badge>}
                         {!mi.available && <Badge tone="neutral">esgotado</Badge>}
                       </p>
                       {mi.onPromo ? (
                         <p className="text-sm">
-                          <span className="text-muted line-through">{formatCents(mi.priceCents)}</span>{' '}
+                          <span className="text-muted line-through">
+                            {formatCents(mi.priceCents)}
+                          </span>{' '}
                           <span className="font-semibold text-danger">
                             {formatCents(mi.effectivePriceCents)}
                           </span>
