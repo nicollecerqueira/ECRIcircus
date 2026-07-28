@@ -2,6 +2,7 @@ import { UnderscoreNamingStrategy } from '@mikro-orm/core';
 import { defineConfig } from '@mikro-orm/postgresql';
 import { Category } from './contexts/catalog/domain/category.entity';
 import { MenuItem } from './contexts/catalog/domain/menu-item.entity';
+import { Station } from './contexts/kitchen/domain/station.entity';
 import { Order } from './contexts/order/domain/order.entity';
 import { OrderItem } from './contexts/order/domain/order-item.entity';
 import { Payment } from './contexts/order/domain/payment.entity';
@@ -30,6 +31,7 @@ export default defineConfig({
     Order,
     OrderItem,
     Payment,
+    Station,
   ],
   // snake_case em tabelas e colunas (padrão Avenir)
   namingStrategy: UnderscoreNamingStrategy,
