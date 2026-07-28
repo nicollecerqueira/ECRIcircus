@@ -1,5 +1,9 @@
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import type { JwtClaims } from '../../auth/jwt.strategy';
+import { DINER_ROLE } from '../../auth/roles';
 import { currentTenant } from '../../common/tenant/tenant-context';
 import { Table, type TableStatus } from './domain/table.entity';
 import { TableSession } from './domain/table-session.entity';
@@ -17,7 +21,11 @@ export interface TableView {
 // qrToken estável que mapeia {location, table}; escanear abre/anexa a sessão.
 @Injectable()
 export class SessionService {
-  constructor(private readonly em: EntityManager) {}
+  constructor(
+    private readonly em: EntityManager,
+    private readonly jwt: JwtService,
+    private readonly config: ConfigService,
+  ) {}
 
   /** Salão da unidade atual: mesas + id da sessão aberta (quando houver). */
   async floor(): Promise<TableView[]> {
@@ -78,13 +86,28 @@ export class SessionService {
       throw new NotFoundException('QR inválido');
     }
     const session = await this.attachOpenSession(table, { skipFilters: true });
+    // JWT de diner assinado: carrega tenant/location/mesa/sessão. O JwtStrategy
+    // valida a assinatura (sem tocar no banco) e o TenantInterceptor monta o
+    // contexto a partir dele — então o pedido do QR já nasce na marca certa.
+    const claims: JwtClaims = {
+      sub: session.id,
+      tenantId: table.tenant.id,
+      locationId: table.location.id,
+      role: DINER_ROLE,
+      tableId: table.id,
+      sessionId: session.id,
+    };
+    const dinerToken = this.jwt.sign(claims, {
+      secret: this.config.get<string>('JWT_ACCESS_SECRET'),
+      // Vale por algumas horas (em segundos) — a duração típica de uma refeição.
+      expiresIn: Number(this.config.get('JWT_DINER_TTL')) || 6 * 3600,
+    });
     return {
       tenantId: table.tenant.id,
       locationId: table.location.id,
       tableId: table.id,
       sessionId: session.id,
-      // token do diner, curto e escopado à mesa (stub). O real assina um JWT.
-      dinerToken: `d_${session.id}`,
+      dinerToken,
     };
   }
 
