@@ -13,12 +13,29 @@ import { useTables } from './floor.service';
 export function TableDetailComponent() {
   const { id } = useParams({ from: '/shell/floor/table/$id' });
   const navigate = useNavigate();
-  const { data: orders, isPending } = useOrders();
+  const { data: orders, isPending, isError } = useOrders();
   const { data: tables } = useTables();
   const createOrder = useCreateOrder();
 
   if (isPending) {
     return <Spinner />;
+  }
+
+  // Sem isto, uma leitura que falha cai no mesmo caminho de "não há pedido" e a
+  // tela mente: mostra "Mesa sem pedido aberto" para uma mesa que pode ter conta.
+  if (isError) {
+    return (
+      <div className="mx-auto max-w-lg p-4 sm:p-6">
+        <Card>
+          <p className="text-danger">Não foi possível carregar os pedidos desta mesa.</p>
+          <div className="mt-4">
+            <Button variant="ghost" onClick={() => navigate({ to: '/floor' })}>
+              Voltar
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
   }
 
   // Número humano vem da mesa (o id agora é UUID); cai no id só se ainda carregando.
@@ -103,6 +120,11 @@ export function TableDetailComponent() {
               Voltar
             </Button>
           </div>
+          {createOrder.isError && (
+            <p className="mt-3 text-sm text-danger">
+              Não foi possível abrir o pedido. Tente de novo.
+            </p>
+          )}
         </Card>
       )}
     </div>

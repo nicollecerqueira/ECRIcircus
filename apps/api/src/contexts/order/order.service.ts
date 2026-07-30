@@ -13,14 +13,23 @@ import { OrderItem as OrderItemEntity } from './domain/order-item.entity';
 import { Payment as PaymentEntity } from './domain/payment.entity';
 import type { Order, OrderChannel, PaymentMethod } from './order.model';
 
-/** Entidade → view (o formato plano que Cozinha, Pagamento e os fronts consomem). */
+/**
+ * Entidade → view (o formato plano que Cozinha, Pagamento e os fronts consomem).
+ *
+ * Todo campo opcional passa por `?? undefined`: colunas anuláveis voltam do
+ * MikroORM como `null`, e `null` sai no JSON como `null` — mas o contrato aqui
+ * (e os schemas Zod dos fronts) declara `campo?: string`, que é `undefined`.
+ * Sem a normalização o front rejeita a resposta inteira no parse e a tela fica
+ * muda. `undefined` some do JSON.stringify, que é exatamente o que "opcional"
+ * significa do outro lado.
+ */
 function toOrderView(o: OrderEntity): Order {
   return {
     id: o.id,
     tenantId: o.tenant.id,
     locationId: o.location.id,
     channel: o.channel,
-    tableId: o.tableId,
+    tableId: o.tableId ?? undefined,
     status: o.status,
     items: o.items
       .getItems()
@@ -33,8 +42,8 @@ function toOrderView(o: OrderEntity): Order {
         qty: i.qty,
         stationId: i.stationId,
         state: i.state,
-        notes: i.notes,
-        voidReason: i.voidReason,
+        notes: i.notes ?? undefined,
+        voidReason: i.voidReason ?? undefined,
       })),
     payments: o.payments
       .getItems()
@@ -43,7 +52,7 @@ function toOrderView(o: OrderEntity): Order {
         id: p.id,
         method: p.method,
         amountCents: p.amountCents,
-        note: p.note,
+        note: p.note ?? undefined,
         createdAt: p.createdAt.toISOString(),
       })),
     createdAt: o.createdAt.toISOString(),

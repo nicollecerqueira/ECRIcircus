@@ -1,5 +1,15 @@
 import { z } from 'zod';
 
+/**
+ * Texto opcional vindo da API. Aceita ausente E `null`: coluna anulável no
+ * Postgres chega como `null`, e `z.string().optional()` rejeita null — o parse
+ * falharia no objeto inteiro e a tela ficaria vazia sem erro visível.
+ */
+const optionalText = z
+  .string()
+  .nullish()
+  .transform((v) => v ?? undefined);
+
 export const itemStateSchema = z.enum(['queued', 'preparing', 'ready', 'served', 'voided']);
 export type ItemState = z.infer<typeof itemStateSchema>;
 
@@ -11,15 +21,15 @@ export const orderItemSchema = z.object({
   qty: z.number(),
   stationId: z.string(),
   state: itemStateSchema,
-  notes: z.string().optional(),
-  voidReason: z.string().optional(),
+  notes: optionalText,
+  voidReason: optionalText,
 });
 export type OrderItem = z.infer<typeof orderItemSchema>;
 
 export const orderSchema = z.object({
   id: z.string(),
   channel: z.enum(['waiter', 'qr', 'pos', 'delivery']),
-  tableId: z.string().optional(),
+  tableId: optionalText,
   status: z.string(),
   items: orderItemSchema.array(),
   payments: z.object({ id: z.string(), method: z.string(), amountCents: z.number() }).array(),

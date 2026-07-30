@@ -54,7 +54,9 @@ Use B for development; A for a quick demo or to hand the stack to someone else.
 ## Try the full loop (demo)
 1. **Staff** (`:5173`) → login `waiter@demo.prato.app` / `prato123` → open a table → add items.
 2. **KDS** (`:5174`) → login `kitchen@demo.prato.app` → items appear live → tap to `preparing`/`ready`.
-3. **Diner** (`:5175/t/q_tb-1`) → scan flow → order → `/track` updates in real time.
+3. **Diner** (`:5175/t/q_22222222-2222-2222-2222-222222222222_1`) → scan flow → order →
+   `/track` updates in real time. O token do QR é `q_<locationId>_<mesa>`; veja os
+   reais em **Admin → Mesas** no app do garçom.
 4. **POS** (`:5173/pos`) → close the bill, register a split payment.
 
 ## Conventions (Avenir standard)

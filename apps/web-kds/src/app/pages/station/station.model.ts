@@ -1,5 +1,11 @@
 import { z } from 'zod';
 
+/** Texto opcional da API: ausente OU `null` (coluna anulável) viram `undefined`. */
+const optionalText = z
+  .string()
+  .nullish()
+  .transform((v) => v ?? undefined);
+
 export const stationSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -9,14 +15,14 @@ export type Station = z.infer<typeof stationSchema>;
 
 export const ticketSchema = z.object({
   orderId: z.string(),
-  tableId: z.string().optional(),
+  tableId: optionalText,
   /** Rótulo humano já resolvido pelo servidor (ex.: "Mesa 3"). */
-  tableLabel: z.string().optional(),
+  tableLabel: optionalText,
   channel: z.string(),
   itemId: z.string(),
   name: z.string(),
   qty: z.number(),
-  notes: z.string().optional(),
+  notes: optionalText,
   state: z.enum(['queued', 'preparing']),
   firedAt: z.string(),
 });
