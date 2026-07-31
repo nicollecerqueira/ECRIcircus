@@ -1,10 +1,12 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { io, type Socket } from 'socket.io-client';
-import { useSession } from './session.store';
 
 /**
  * Diner real-time: a diner may only follow their own order room. On item/order
  * events we invalidate the tracked order's query so the track page updates live.
+ *
+ * Conecta sem token: o cliente é anônimo desde que o QR de mesa saiu, e a sala
+ * que ele acompanha é a do próprio pedido, cujo id ele acabou de receber.
  */
 class RealtimeService {
   private socket: Socket | null = null;
@@ -16,8 +18,7 @@ class RealtimeService {
     if (this.socket) {
       return;
     }
-    const token = useSession.getState().dinerToken ?? '';
-    this.socket = io({ path: '/realtime', auth: { token }, transports: ['websocket'] });
+    this.socket = io({ path: '/realtime', auth: { token: '' }, transports: ['websocket'] });
     this.socket.on('connect', () => {
       if (this.orderId) {
         this.socket?.emit('subscribe', { type: 'order', id: this.orderId });

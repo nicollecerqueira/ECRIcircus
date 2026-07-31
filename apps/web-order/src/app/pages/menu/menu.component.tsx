@@ -1,12 +1,22 @@
 import { Link } from '@tanstack/react-router';
 import { useSession } from '../../core/session.store';
-import { Badge, Button, Card, EmptyState, Spinner } from '../../shared/components/ui';
+import { Art, Attractions } from '../../shared/components/art';
+import {
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  Kicker,
+  PosterHeading,
+  Spinner,
+  StarDivider,
+  TentStripes,
+} from '../../shared/components/ui';
 import { formatCents } from '../../shared/utils/money';
 import { useMenu } from '../order/order.service';
 
 export function MenuComponent() {
-  const locationId = useSession((s) => s.locationId);
-  const { data: menu, isPending } = useMenu({ locationId });
+  const { data: menu, isPending } = useMenu();
   const cart = useSession((s) => s.cart);
   const addToCart = useSession((s) => s.addToCart);
 
@@ -20,21 +30,24 @@ export function MenuComponent() {
 
   return (
     <div className="mx-auto max-w-lg p-4 pb-28">
-      <h1 className="mb-4 text-2xl font-bold">Cardápio</h1>
+      <header className="mb-5 pt-6 text-center">
+        <Art name="tent" size="md" fallback="🎪" />
+        <Kicker>O grande espetáculo</Kicker>
+        <h1 className="circus-title mt-1 text-3xl font-bold">Cardápio</h1>
+        <StarDivider className="my-4" />
+      </header>
 
       {categories.length === 0 ? (
         <EmptyState
-          icon="🍽️"
-          title="Cardápio a caminho"
-          hint="Ainda não há itens disponíveis nesta mesa. Se precisar, chame o garçom."
+          icon={<Art name="rabbitHat" size="lg" fallback="🎩" />}
+          title="O picadeiro está sendo montado"
+          hint="Ainda não há itens disponíveis. Volte daqui a pouco."
         />
       ) : (
         <div className="space-y-6">
           {categories.map((cat) => (
             <section key={cat.id}>
-              <h2 className="mb-2 border-b border-border pb-1 text-sm font-semibold uppercase tracking-wide text-muted">
-                {cat.name}
-              </h2>
+              <PosterHeading>{cat.name}</PosterHeading>
               <div className="space-y-2">
                 {cat.items.map((mi) => (
                   <Card key={mi.id} className="flex items-center justify-between gap-3">
@@ -83,14 +96,25 @@ export function MenuComponent() {
         </div>
       )}
 
+      {/* O cardápio virou a tela de entrada do app — é aqui que o elenco
+          aparece, senão as outras ilustrações ficam invisíveis. */}
+      <StarDivider className="my-8" />
+      <div className="text-center">
+        <Kicker>Atrações da casa</Kicker>
+        <Attractions className="mt-4" />
+      </div>
+
       {cartCount > 0 && (
-        <div className="fixed inset-x-0 bottom-0 border-t border-border bg-surface p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-          <Link to="/cart" className="mx-auto block max-w-lg">
-            <Button className="w-full">
-              Ver carrinho · {cartCount} {cartCount === 1 ? 'item' : 'itens'} ·{' '}
-              {formatCents(cartTotal)}
-            </Button>
-          </Link>
+        <div className="fixed inset-x-0 bottom-0 bg-surface">
+          <TentStripes />
+          <div className="p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+            <Link to="/cart" className="mx-auto block max-w-lg">
+              <Button className="w-full">
+                🎟️ Ver carrinho · {cartCount} {cartCount === 1 ? 'item' : 'itens'} ·{' '}
+                {formatCents(cartTotal)}
+              </Button>
+            </Link>
+          </div>
         </div>
       )}
     </div>

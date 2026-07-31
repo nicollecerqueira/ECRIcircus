@@ -1,7 +1,7 @@
 import { IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { OrderChannel } from './order.model';
 
-const CHANNELS: OrderChannel[] = ['waiter', 'qr', 'pos', 'delivery'];
+const CHANNELS: OrderChannel[] = ['waiter', 'qr', 'pos', 'delivery', 'counter'];
 
 export class CreateOrderDto {
   @IsIn(CHANNELS)

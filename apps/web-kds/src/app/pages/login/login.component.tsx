@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useLogin } from '../../core/auth.service';
 import { useAuthStore } from '../../core/auth.store';
+import { Art } from '../../shared/components/art';
 import { Button } from '../../shared/components/ui';
 
 const schema = z.object({
@@ -35,9 +36,13 @@ export function LoginComponent() {
     <div className="flex min-h-full items-center justify-center p-6">
       <form
         onSubmit={onSubmit}
-        className="w-full max-w-sm space-y-4 rounded-2xl border border-border bg-surface p-6"
+        className="w-full max-w-sm space-y-4 overflow-hidden rounded-2xl border border-border bg-surface p-6"
       >
-        <h1 className="text-2xl font-bold text-primary">Prato · Cozinha</h1>
+        <div aria-hidden className="circus-stripes -mx-6 -mt-6" />
+        <div className="text-center">
+          <Art name="tent" size="lg" fallback="🎪" />
+          <h1 className="circus-wordmark text-2xl font-bold">ECRI Circus · Cozinha</h1>
+        </div>
         <label className="block">
           <span className="mb-1 block text-sm font-medium">E-mail</span>
           <input

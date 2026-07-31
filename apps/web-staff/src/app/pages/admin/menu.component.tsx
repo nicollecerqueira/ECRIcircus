@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { Art } from '../../shared/components/art';
 import { Button, Card, Spinner } from '../../shared/components/ui';
 import { FormField } from '../../shared/form-field';
 import { useMenu } from '../order/order.service';
@@ -41,7 +42,10 @@ export function MenuAdminComponent() {
   return (
     <div className="grid gap-4 p-4 sm:p-6 lg:grid-cols-[1fr_320px]">
       <section>
-        <h1 className="mb-4 text-xl font-bold">Cardápio</h1>
+        <h1 className="circus-wordmark mb-4 flex items-center gap-3 text-xl font-bold">
+          <Art name="rabbitHat" size="sm" fallback="🎩" />
+          Cardápio
+        </h1>
         <div className="space-y-4">
           {menu.categories.map((cat) => (
             <Card key={cat.id}>

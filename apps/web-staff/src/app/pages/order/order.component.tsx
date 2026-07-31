@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { realtime } from '../../core/realtime.service';
+import { Art } from '../../shared/components/art';
 import { Badge, Button, Card, Spinner } from '../../shared/components/ui';
 import { formatCents } from '../../shared/utils/money';
 import { useTables } from '../floor/floor.service';
@@ -41,7 +42,10 @@ export function OrderComponent() {
 
         <Card>
           {order.items.length === 0 ? (
-            <p className="text-muted">Nenhum item ainda. Adicione do cardápio →</p>
+            <div className="py-6 text-center">
+              <Art name="rabbitHat" size="md" fallback="🎩" className="mb-2" />
+              <p className="text-muted">Nenhum item ainda. Adicione do cardápio →</p>
+            </div>
           ) : (
             <ul className="divide-y divide-border">
               {order.items.map((item) => (

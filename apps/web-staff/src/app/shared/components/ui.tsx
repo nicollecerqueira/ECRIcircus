@@ -61,7 +61,7 @@ export function IconButton({
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-xl border border-border bg-surface p-4 shadow-sm ${className}`}>
+    <div className={`circus-card rounded-xl border border-border bg-surface p-4 ${className}`}>
       {children}
     </div>
   );

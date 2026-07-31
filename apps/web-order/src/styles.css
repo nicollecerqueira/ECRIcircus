@@ -1,9 +1,18 @@
 @import 'tailwindcss';
 
-/* Paleta "Preto & Dourado" — mesmo set de tokens semânticos de web-staff /
-   web-kds, para os três apps lerem como um produto só.
-   Regras (dourado só em detalhe; primária inverte entre claro/escuro):
-   ver a nota completa em web-staff/src/styles.css. */
+/* ─── Paleta "ECRI Circus" — Branco · Vermelho · Dourado ───────────────────
+   Lona branca, vermelho de picadeiro e dourado de marquise. O MESMO set de
+   tokens semânticos de web-staff / web-kds, para os três apps lerem como um
+   produto só. Ver a nota completa em web-staff/src/styles.css.
+
+   TEMA CLARO FIXO. Não há bloco `prefers-color-scheme: dark`: a lona branca é
+   a marca, e no escuro o branco vira o oposto do que a identidade pede. O
+   `color-scheme: light` abaixo garante que controles nativos (inputs, barras
+   de rolagem) também não escureçam quando o SO está em modo escuro.
+
+   Regra que sustenta o visual: dourado é DETALHE (borda, luz, estrela, ícone),
+   nunca área grande — superfície dourada chapada mata o efeito. O vermelho é
+   quem carrega ação; o branco é quem dá o ar de lona limpa. */
 @theme {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -14,41 +23,42 @@
   --color-primary: var(--primary);
   --color-primary-fg: var(--primary-fg);
   --color-accent: var(--accent);
+  --color-gold: var(--gold);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
+
+  /* Fonte de cartaz de circo. Só display/títulos — corpo segue sans. */
+  --font-display: 'Rockwell', 'Bookman Old Style', 'Playfair Display', Georgia, serif;
+
+  --shadow-card: 0 1px 2px rgb(90 20 30 / 0.06), 0 8px 24px -12px rgb(90 20 30 / 0.18);
+  --shadow-card-hover: 0 2px 4px rgb(90 20 30 / 0.08), 0 14px 32px -14px rgb(90 20 30 / 0.28);
 }
 
 :root {
-  --bg: #f9f8f5;
+  color-scheme: light;
+
+  --bg: #fffdfa;
   --surface: #ffffff;
-  --surface-2: #f0eee9;
-  --fg: #121110;
-  --muted: #77726b;
-  --border: #e7e4de;
-  --primary: #1a1917;
-  --primary-fg: #f9f8f5;
+  --surface-2: #fdf4f1;
+  --fg: #1a1112;
+  --muted: #7a6a67;
+  --border: #f1e4e0;
+  --primary: #b3122a;
+  --primary-fg: #fffaf7;
+  /* Dourado escurecido para passar em contraste como TEXTO sobre superfície
+     clara (o dourado "bonito" de marquise dá ~3.4:1 e reprova). */
   --accent: #8a6b22;
+  /* Dourado decorativo — só ornamento (luzes, bandeirolas, bordas). Nunca texto. */
+  --gold: #c9a227;
   --success: #2f6b47;
   --warning: #9a4f1c;
-  --danger: #a03d33;
-}
+  /* Distinto do vermelho da marca: mais claro e mais quente, para alerta não
+     virar sinônimo de "cor do circo". */
+  --danger: #c62828;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0f0e0d;
-    --surface: #1a1917;
-    --surface-2: #24221f;
-    --fg: #f2efe9;
-    --muted: #9a948b;
-    --border: #2a2723;
-    --primary: #d4b45f;
-    --primary-fg: #0f0e0d;
-    --accent: #d4b45f;
-    --success: #6fbf8b;
-    --warning: #d9a441;
-    --danger: #d9756b;
-  }
+  --stripe-a: #b3122a;
+  --stripe-b: #ffffff;
 }
 
 html,
@@ -58,8 +68,165 @@ body,
 }
 
 body {
-  background: var(--bg);
+  /* Refletor: um facho dourado descendo do alto da lona. */
+  background:
+    radial-gradient(ellipse 80% 45% at 50% 0%, rgb(201 162 39 / 0.13), transparent 70%),
+    var(--bg);
+  background-attachment: fixed;
   color: var(--fg);
   font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Elementos de circo ───────────────────────────────────────────────────
+   Tudo abaixo é ornamento: não carrega informação, é `aria-hidden` nos
+   componentes que o usam, e nenhuma tela depende disto para funcionar. */
+
+/* Toldo da tenda — listras verticais com a barra recortada em meia-lua. */
+.circus-awning {
+  height: 26px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--stripe-a) 0 22px,
+    var(--stripe-b) 22px 44px
+  );
+  -webkit-mask-image: radial-gradient(circle 11px at 11px 100%, transparent 0 11px, #000 11.5px);
+  mask-image: radial-gradient(circle 11px at 11px 100%, transparent 0 11px, #000 11.5px);
+  -webkit-mask-size: 22px 100%;
+  mask-size: 22px 100%;
+  -webkit-mask-repeat: repeat-x;
+  mask-repeat: repeat-x;
+}
+
+/* Fita fina da lona — para topo/rodapé de barras, onde o toldo pesaria. */
+.circus-stripes {
+  height: 8px;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--stripe-a) 0 12px,
+    var(--stripe-b) 12px 24px
+  );
+}
+
+/* Bandeirolas penduradas num fio dourado, com balanço lento. */
+.circus-bunting {
+  height: 26px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='26'%3E%3Cpath d='M0 2h72' stroke='%23c9a227' stroke-width='2'/%3E%3Cpath d='M2 3 34 3 18 24Z' fill='%23b3122a'/%3E%3Cpath d='M38 3 70 3 54 24Z' fill='%23c9a227'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-position: top center;
+  transform-origin: top center;
+  animation: circus-sway 6s ease-in-out infinite;
+}
+
+@keyframes circus-sway {
+  0%,
+  100% {
+    transform: rotate(-0.35deg);
+  }
+  50% {
+    transform: rotate(0.35deg);
+  }
+}
+
+/* Luzes de marquise — a fileira de lâmpadas da testeira do picadeiro. */
+.circus-marquee {
+  height: 12px;
+  background-image: radial-gradient(circle at center, var(--gold) 0 2.6px, transparent 3.2px);
+  background-size: 18px 12px;
+  background-repeat: repeat-x;
+  opacity: 0.9;
+}
+
+/* Logotipo: fonte de cartaz, versalete e um fio de luz dourada embaixo. */
+.circus-wordmark {
+  font-family: var(--font-display);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--primary);
+  text-shadow: 0 1.5px 0 rgb(201 162 39 / 0.55);
+}
+
+/* Título de cartaz — para os h1 das telas do cliente. */
+.circus-title {
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+}
+
+/* Sobrelinha de cartaz: "O GRANDE ESPETÁCULO" em dourado, bem espaçada. */
+.circus-kicker {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* Ilustrações em aquarela.
+   As artes vêm com fundo BRANCO CHAPADO, sem canal alfa — sobre a lona creme
+   (`--bg: #fffdfa`, ainda mais quente sob o facho dourado) isso aparece como
+   um retângulo branco em volta do desenho.
+   `multiply` resolve sem editar arquivo: branco multiplicado por qualquer
+   fundo devolve o próprio fundo, então a moldura some e só a tinta fica.
+   Funciona igual sobre `--surface` branco e sobre a lona. */
+.circus-art {
+  mix-blend-mode: multiply;
+}
+
+/* Cartão com elevação quente — o padrão do app do cliente. */
+.circus-card {
+  box-shadow: var(--shadow-card);
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+.circus-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  border-color: rgb(201 162 39 / 0.55);
+}
+
+/* Ingresso: picote dourado e as duas mordidas laterais. */
+.circus-ticket {
+  position: relative;
+  border: 2px dashed var(--gold);
+  background: var(--surface);
+}
+.circus-ticket::before,
+.circus-ticket::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: var(--bg);
+  box-shadow: inset 0 0 0 2px rgb(201 162 39 / 0.35);
+  transform: translateY(-50%);
+}
+.circus-ticket::before {
+  left: -10px;
+}
+.circus-ticket::after {
+  right: -10px;
+}
+
+/* Divisor com estrela dourada no meio. */
+.circus-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--gold);
+}
+.circus-divider::before,
+.circus-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgb(201 162 39 / 0.7), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .circus-bunting {
+    animation: none;
+  }
 }

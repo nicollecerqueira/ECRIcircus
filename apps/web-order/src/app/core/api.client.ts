@@ -1,20 +1,14 @@
 import axios from 'axios';
-import { useSession } from './session.store';
 
 /**
- * Single axios instance. Injects the diner's table token (not a JWT) so the API
- * scopes requests to this table's session. Public endpoints (menu/storefront) work
- * even without a token.
+ * Single axios instance, sem nenhum cabeçalho de autenticação.
+ *
+ * O cliente é anônimo: não há login e, desde que o QR de mesa saiu, também não
+ * há token de sessão para injetar. As rotas que este app usa (cardápio, criar
+ * pedido, ler o próprio pedido) são públicas na API — o escopo de unidade vem
+ * de `LOCATION_ID` (ver `core/config.ts`), não de um token.
  */
 export const apiClient = axios.create({
   baseURL: '/api/v1',
   headers: { 'Content-Type': 'application/json' },
-});
-
-apiClient.interceptors.request.use((config) => {
-  const token = useSession.getState().dinerToken;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
 });

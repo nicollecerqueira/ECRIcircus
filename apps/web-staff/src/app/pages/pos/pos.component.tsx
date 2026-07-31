@@ -1,4 +1,5 @@
 import { useNavigate } from '@tanstack/react-router';
+import { Art } from '../../shared/components/art';
 import { Badge, Button, Card, Spinner } from '../../shared/components/ui';
 import { formatCents } from '../../shared/utils/money';
 import { useTables } from '../floor/floor.service';
@@ -24,7 +25,10 @@ export function PosComponent() {
     <div className="p-4 sm:p-6">
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold">Caixa (POS)</h1>
+          <h1 className="circus-wordmark flex items-center gap-3 text-xl font-bold">
+            <Art name="popcornBucket" size="sm" fallback="🍿" />
+            Caixa (POS)
+          </h1>
           <p className="text-sm text-muted">
             {bills.length} conta(s) em aberto · a receber{' '}
             <span className="font-semibold text-fg">{formatCents(grandTotal)}</span>
@@ -43,7 +47,10 @@ export function PosComponent() {
       </div>
 
       {bills.length === 0 ? (
-        <p className="text-muted">Nenhuma conta em aberto.</p>
+        <div className="py-8 text-center">
+          <Art name="popcornBucket" size="lg" fallback="🍿" className="mb-2" />
+          <p className="text-muted">Nenhuma conta em aberto.</p>
+        </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {bills.map((bill) => {

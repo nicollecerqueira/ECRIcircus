@@ -15,6 +15,9 @@ export function AppComponent() {
 
   return (
     <div className="relative min-h-full">
+      {/* Único ornamento do quiosque: uma fita fina no topo. O quadro de
+          comandas não ganha mais nada — nada pode competir com o status. */}
+      <div aria-hidden className="circus-stripes" />
       {!connected && (
         <div className="fixed right-3 top-3 z-50 rounded-full bg-warning/20 px-3 py-1 text-xs font-medium text-warning">
           reconectando…

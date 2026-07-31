@@ -1,24 +1,20 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../core/api.client';
+import { LOCATION_ID } from '../../core/config';
 import { realtime } from '../../core/realtime.service';
 import { type CartLine, useSession } from '../../core/session.store';
 import { type DinerOrder, type Menu, menuSchema, orderSchema } from './order.model';
 
 /**
- * Cardápio público. O diner não tem JWT, então a API não consegue deduzir a
+ * Cardápio público. O cliente não tem JWT, então a API não consegue deduzir a
  * marca sozinha — e, por segurança, ela recusa devolver cardápio sem escopo em
- * vez de devolver o de todo mundo. Por isso passamos a unidade (após ler o QR)
- * ou o slug da marca (storefront de delivery).
+ * vez de entregar o de qualquer marca. Sem QR de mesa, o escopo vem da config
+ * (`LOCATION_ID`); a vitrine de delivery continua passando o slug da marca.
  */
-export function useMenu(scope: { locationId?: string | null; brandSlug?: string }) {
-  const params = scope.locationId
-    ? { location: scope.locationId }
-    : scope.brandSlug
-      ? { brand: scope.brandSlug }
-      : undefined;
+export function useMenu(scope?: { brandSlug?: string }) {
+  const params = scope?.brandSlug ? { brand: scope.brandSlug } : { location: LOCATION_ID };
   return useQuery({
     queryKey: ['menu', params],
-    enabled: !!params,
     queryFn: async () => {
       const { data } = await apiClient.get<Menu>('/menu', { params });
       return menuSchema.parse(data);
@@ -26,31 +22,19 @@ export function useMenu(scope: { locationId?: string | null; brandSlug?: string 
   });
 }
 
-/** Resolve a scanned QR token → open/attach the table session (public). */
-export function useResolveQr() {
-  const setSession = useSession((s) => s.setSession);
-  return useMutation({
-    mutationFn: async (qrToken: string) => {
-      const { data } = await apiClient.post<{
-        dinerToken: string;
-        sessionId: string;
-        tableId: string;
-        locationId: string;
-      }>('/diner-sessions', { qrToken });
-      return data;
-    },
-    onSuccess: (data) => setSession(data),
-  });
-}
-
-/** Submit the cart: create a qr-channel order, then fire each line. */
+/**
+ * Envia o carrinho: cria um pedido de balcão e dispara cada linha.
+ *
+ * `channel: 'counter'` é o pedido que o próprio cliente faz pelo app, sem mesa
+ * e sem garçom. A API aceita este POST sem autenticação e, sem contexto de
+ * tenant, atribui o pedido à unidade padrão — por isso não vai `tableId`.
+ */
 export function useSubmitOrder() {
-  const { tableId, setOrderId, clearCart } = useSession.getState();
+  const { setOrderId, clearCart } = useSession.getState();
   return useMutation({
     mutationFn: async (lines: CartLine[]) => {
       const { data: order } = await apiClient.post<{ id: string }>('/orders', {
-        channel: 'qr',
-        tableId: tableId ?? undefined,
+        channel: 'counter',
       });
       for (const line of lines) {
         await apiClient.post(`/orders/${order.id}/items`, {

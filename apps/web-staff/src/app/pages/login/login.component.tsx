@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useLogin } from '../../core/auth.service';
 import { useAuthStore } from '../../core/auth.store';
+import { Art } from '../../shared/components/art';
 import { Button } from '../../shared/components/ui';
 import { FormField } from '../../shared/form-field';
 
@@ -38,10 +39,12 @@ export function LoginComponent() {
     <div className="flex min-h-full items-center justify-center p-6">
       <form
         onSubmit={onSubmit}
-        className="w-full max-w-sm space-y-4 rounded-2xl border border-border bg-surface p-6 shadow-sm"
+        className="w-full max-w-sm space-y-4 overflow-hidden rounded-2xl border border-border bg-surface p-6 shadow-sm"
       >
-        <div>
-          <h1 className="text-2xl font-bold text-primary">Prato</h1>
+        <div aria-hidden className="circus-stripes -mx-6 -mt-6" />
+        <div className="text-center">
+          <Art name="tent" size="lg" fallback="🎪" />
+          <h1 className="circus-wordmark text-2xl font-bold">ECRI Circus</h1>
           <p className="text-sm text-muted">Entre para acessar o salão e o caixa.</p>
         </div>
         <FormField

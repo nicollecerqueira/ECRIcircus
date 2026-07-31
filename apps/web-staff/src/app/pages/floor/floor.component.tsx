@@ -1,4 +1,5 @@
 import { useNavigate } from '@tanstack/react-router';
+import { Art } from '../../shared/components/art';
 import { Badge, Card, Spinner } from '../../shared/components/ui';
 import { STATUS_LABEL, STATUS_TONE, type Table } from './floor.model';
 import { useOpenSession, useTables } from './floor.service';
@@ -27,7 +28,12 @@ export function FloorComponent() {
 
   return (
     <div className="p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-bold">Salão</h1>
+      {/* A arte fica no cabeçalho, não escondida num estado vazio que quase
+          nunca acontece — do contrário ninguém chega a vê-la. */}
+      <div className="mb-4 flex items-center gap-3">
+        <Art name="tent" size="sm" fallback="🎪" />
+        <h1 className="circus-wordmark text-xl font-bold">Salão</h1>
+      </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
         {tables.map((t) => (
           <button key={t.id} type="button" onClick={() => onTable(t)} className="text-left">

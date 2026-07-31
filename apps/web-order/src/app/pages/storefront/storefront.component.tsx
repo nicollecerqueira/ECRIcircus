@@ -1,5 +1,6 @@
 import { useParams } from '@tanstack/react-router';
-import { Card, Spinner } from '../../shared/components/ui';
+import { Art } from '../../shared/components/art';
+import { Card, Kicker, PosterHeading, Spinner, StarDivider } from '../../shared/components/ui';
 import { formatCents } from '../../shared/utils/money';
 import { useMenu } from '../order/order.service';
 
@@ -15,14 +16,19 @@ export function StorefrontComponent() {
 
   return (
     <div className="mx-auto max-w-lg p-4">
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold capitalize">{slug.replace(/-/g, ' ')}</h1>
-        <p className="text-muted">Entrega própria · faça seu pedido online</p>
-      </div>
+      <header className="mb-5 pt-6 text-center">
+        <Art name="tent" size="xl" fallback="🎪" />
+        <Kicker>Entrega própria</Kicker>
+        <h1 className="circus-title mt-1 text-3xl font-bold capitalize">
+          {slug.replace(/-/g, ' ')}
+        </h1>
+        <p className="text-muted">Faça seu pedido online</p>
+        <StarDivider className="my-4" />
+      </header>
       <div className="space-y-5">
         {menu.categories.map((cat) => (
           <section key={cat.id}>
-            <h2 className="mb-2 text-sm font-semibold uppercase text-muted">{cat.name}</h2>
+            <PosterHeading>{cat.name}</PosterHeading>
             <div className="space-y-2">
               {cat.items
                 .filter((mi) => mi.available)

@@ -12,9 +12,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Prato · Cozinha',
-        short_name: 'Prato KDS',
-        theme_color: '#0f0e0d',
+        name: 'ECRI Circus · Cozinha',
+        short_name: 'ECRI KDS',
+        theme_color: '#b3122a',
         display: 'fullscreen',
         start_url: '/',
       },

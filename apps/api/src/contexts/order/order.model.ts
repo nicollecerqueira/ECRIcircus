@@ -14,7 +14,12 @@ export type OrderStatus =
 
 export type ItemState = 'queued' | 'preparing' | 'ready' | 'served' | 'voided';
 
-export type OrderChannel = 'waiter' | 'qr' | 'pos' | 'delivery';
+/**
+ * `counter` = pedido feito pelo próprio cliente no app, sem mesa e sem garçom
+ * (o fluxo do ECRI Circus). Difere de `pos`, que é o caixa lançando pelo
+ * balcão, e de `qr`, que exige sessão de mesa.
+ */
+export type OrderChannel = 'waiter' | 'qr' | 'pos' | 'delivery' | 'counter';
 
 export type PaymentMethod = 'cash' | 'card' | 'pix' | 'voucher' | 'other';
 

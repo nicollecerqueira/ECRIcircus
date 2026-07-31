@@ -1,15 +1,22 @@
 @import 'tailwindcss';
 
-/* Paleta "Preto & Dourado" — mesma identidade de web-staff / web-order
-   (marfim, grafite, dourado), COM UMA EXCEÇÃO DELIBERADA:
+/* ─── Paleta "ECRI Circus" — Branco · Vermelho · Dourado ───────────────────
+   Mesma identidade de web-staff / web-order (lona branca, vermelho de
+   picadeiro, dourado de marquise), COM DUAS EXCEÇÕES DELIBERADAS:
 
-   as cores de status (success/warning/danger) aqui são SATURADAS, não as
-   versões sóbrias do salão. O envelhecimento das comandas (verde → âmbar →
-   vermelho) é lido a metros de distância, sob luz ruim, às vezes de relance.
-   Legibilidade funcional ganha de elegância nesta tela — e só nesta.
+   1. As cores de status (success/warning/danger) aqui são SATURADAS, não as
+      versões sóbrias do salão. O envelhecimento das comandas (verde → âmbar →
+      vermelho) é lido a metros de distância, sob luz ruim, às vezes de
+      relance. Legibilidade funcional ganha de elegância nesta tela — e só
+      nesta.
 
-   Regras da paleta (dourado só em detalhe; primária inverte entre claro e
-   escuro): ver a nota completa em web-staff/src/styles.css. */
+   2. A primária NÃO é o vermelho da marca. Nesta tela vermelho significa
+      "comanda atrasada" e nada mais — uma primária vermelha competiria com o
+      alarme. Aqui a primária é tinta quase-preta, e a marca aparece no
+      dourado escurecido.
+
+   Tema claro fixo e regra do dourado (detalhe, nunca área grande): ver a nota
+   completa em web-staff/src/styles.css. */
 @theme {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -20,42 +27,37 @@
   --color-primary: var(--primary);
   --color-primary-fg: var(--primary-fg);
   --color-accent: var(--accent);
+  --color-gold: var(--gold);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
+
+  --font-display: 'Rockwell', 'Bookman Old Style', 'Playfair Display', Georgia, serif;
+
+  --shadow-card: 0 1px 2px rgb(90 20 30 / 0.06), 0 8px 24px -12px rgb(90 20 30 / 0.18);
 }
 
 :root {
-  --bg: #f9f8f5;
+  color-scheme: light;
+
+  --bg: #fffdfa;
   --surface: #ffffff;
-  --surface-2: #f0eee9;
-  --fg: #121110;
-  --muted: #77726b;
-  --border: #e7e4de;
-  --primary: #1a1917;
-  --primary-fg: #f9f8f5;
+  --surface-2: #fdf4f1;
+  --fg: #1a1112;
+  --muted: #7a6a67;
+  --border: #f1e4e0;
+  /* Tinta quente, não o vermelho da marca (ver nota 2 acima). */
+  --primary: #2a1416;
+  --primary-fg: #fffaf7;
   --accent: #8a6b22;
-  /* Status vivos (ver nota acima) */
+  --gold: #c9a227;
+  /* Status vivos (ver nota 1 acima) */
   --success: #16a34a;
   --warning: #d97706;
   --danger: #dc2626;
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0f0e0d;
-    --surface: #1a1917;
-    --surface-2: #24221f;
-    --fg: #f2efe9;
-    --muted: #9a948b;
-    --border: #2a2723;
-    --primary: #d4b45f;
-    --primary-fg: #0f0e0d;
-    --accent: #d4b45f;
-    --success: #22c55e;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-  }
+  --stripe-a: #b3122a;
+  --stripe-b: #ffffff;
 }
 
 html,
@@ -69,4 +71,36 @@ body {
   color: var(--fg);
   font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Ornamentos de circo — decorativos. Na cozinha ficam só na marca e no fio de
+   topo: a tela de comandas não ganha ornamento nenhum, para não disputar
+   atenção com o status das fichas. */
+.circus-stripes {
+  height: 8px;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--stripe-a) 0 12px,
+    var(--stripe-b) 12px 24px
+  );
+}
+
+.circus-wordmark {
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* Ilustrações em aquarela — fundo branco chapado sem canal alfa. `multiply`
+   faz a moldura branca sumir sobre a lona creme sem reeditar o arquivo. */
+.circus-art {
+  mix-blend-mode: multiply;
+}
+
+.circus-card {
+  box-shadow: var(--shadow-card);
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }

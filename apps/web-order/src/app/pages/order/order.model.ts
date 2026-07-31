@@ -31,6 +31,8 @@ export const orderSchema = z.object({
       id: z.string(),
       name: z.string(),
       qty: z.number(),
+      /** Preço congelado no lançamento — é dele que sai o total do relatório. */
+      unitPriceCents: z.number(),
       state: z.enum(['queued', 'preparing', 'ready', 'served', 'voided']),
     })
     .array(),

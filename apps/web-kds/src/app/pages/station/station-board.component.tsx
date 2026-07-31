@@ -1,10 +1,21 @@
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { realtime } from '../../core/realtime.service';
+import { Art } from '../../shared/components/art';
 import { Spinner } from '../../shared/components/ui';
 import { agingTone, minutesSince } from '../../shared/utils/time-ago';
 import type { Ticket } from './station.model';
 import { useAdvanceItem, useBoard } from './station.service';
+
+/** Sem mesa, a origem do pedido é o que a cozinha tem para se orientar — então
+    ela precisa vir por extenso, não como o slug cru do canal. */
+const CHANNEL_LABEL: Record<string, string> = {
+  counter: 'Balcão',
+  delivery: 'Delivery',
+  pos: 'Caixa',
+  qr: 'QR',
+  waiter: 'Garçom',
+};
 
 const AGING_CLASS: Record<ReturnType<typeof agingTone>, string> = {
   fresh: 'border-success',
@@ -26,7 +37,9 @@ function TicketCard({ ticket, onTap }: { ticket: Ticket; onTap: () => void }) {
         </span>
         <span className="text-lg text-muted">{mins}min</span>
       </div>
-      <p className="mt-1 text-sm text-muted">{ticket.tableLabel ?? ticket.channel}</p>
+      <p className="mt-1 text-sm text-muted">
+        {ticket.tableLabel ?? CHANNEL_LABEL[ticket.channel] ?? ticket.channel}
+      </p>
       {ticket.notes && <p className="mt-2 text-base">📝 {ticket.notes}</p>}
       <p className="mt-3 text-lg font-semibold text-primary">
         {ticket.state === 'queued' ? 'Toque = Preparar' : 'Toque = Pronto ✓'}
@@ -68,7 +81,12 @@ export function StationBoardComponent() {
         <h1 className="text-2xl font-bold">{board.tickets.length} itens na fila</h1>
       </div>
       {board.tickets.length === 0 ? (
-        <p className="p-12 text-center text-2xl text-muted">Tudo pronto 🎉</p>
+        /* Fila vazia é o ÚNICO momento em que o quadro pode ganhar ornamento:
+           não há ficha na tela para a arte disputar atenção. */
+        <div className="p-12 text-center">
+          <Art name="seal" size="xl" fallback="🦭" className="mb-3" />
+          <p className="text-2xl text-muted">Tudo pronto 🎉</p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {board.tickets.map((t) => (

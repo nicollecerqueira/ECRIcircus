@@ -13,9 +13,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Prato · Staff',
-        short_name: 'Prato Staff',
-        theme_color: '#1a1917',
+        name: 'ECRI Circus · Staff',
+        short_name: 'ECRI Staff',
+        theme_color: '#b3122a',
         display: 'standalone',
         start_url: '/',
       },

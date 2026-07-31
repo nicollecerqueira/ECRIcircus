@@ -28,7 +28,7 @@ export type OrderItem = z.infer<typeof orderItemSchema>;
 
 export const orderSchema = z.object({
   id: z.string(),
-  channel: z.enum(['waiter', 'qr', 'pos', 'delivery']),
+  channel: z.enum(['waiter', 'qr', 'pos', 'delivery', 'counter']),
   tableId: optionalText,
   status: z.string(),
   items: orderItemSchema.array(),

@@ -7,7 +7,7 @@ export function Button({
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'ghost' }) {
   const base =
     variant === 'primary'
-      ? 'bg-primary text-primary-fg hover:opacity-90'
+      ? 'bg-primary text-primary-fg ring-1 ring-gold/40 hover:opacity-90'
       : 'bg-surface-2 text-fg hover:bg-border';
   return (
     <button
@@ -19,7 +19,9 @@ export function Button({
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-xl border border-border bg-surface p-4 ${className}`}>{children}</div>
+    <div className={`circus-card rounded-xl border border-border bg-surface p-4 ${className}`}>
+      {children}
+    </div>
   );
 }
 
@@ -63,9 +65,60 @@ export function EmptyState({
   return (
     <div className="mx-auto max-w-md p-8 text-center">
       {icon && <div className="mb-3 text-5xl">{icon}</div>}
-      <p className="text-lg font-semibold text-fg">{title}</p>
+      <p className="circus-title text-lg font-semibold text-fg">{title}</p>
       {hint && <p className="mx-auto mt-1 max-w-xs text-sm text-muted">{hint}</p>}
       {children && <div className="mt-5">{children}</div>}
     </div>
+  );
+}
+
+/* ─── Ornamentos de circo ──────────────────────────────────────────────────
+   Puramente decorativos: `aria-hidden`, sem texto e sem papel funcional.
+   As classes vivem em styles.css. */
+
+/** Faixas da lona — fio fino, para topo/rodapé de uma barra. */
+export function TentStripes({ className = '' }: { className?: string }) {
+  return <div aria-hidden className={`circus-stripes ${className}`} />;
+}
+
+/** Toldo da tenda, com a barra recortada em meia-lua. Peça de destaque: uma
+    por tela, no topo — repetido, vira poluição. */
+export function Awning({ className = '' }: { className?: string }) {
+  return <div aria-hidden className={`circus-awning ${className}`} />;
+}
+
+/** Sobrelinha de cartaz acima de um título. */
+export function Kicker({ children }: { children: ReactNode }) {
+  return <p className="circus-kicker">{children}</p>;
+}
+
+/** Bandeirolas penduradas — separa o cabeçalho do conteúdo. */
+export function Bunting({ className = '' }: { className?: string }) {
+  return <div aria-hidden className={`circus-bunting ${className}`} />;
+}
+
+/** Fileira de lâmpadas da marquise. */
+export function MarqueeLights({ className = '' }: { className?: string }) {
+  return <div aria-hidden className={`circus-marquee ${className}`} />;
+}
+
+/** Divisor com estrela dourada no meio — respiro entre seções.
+    A margem fica com quem chama: `my-*` embutido aqui colidiria com o que vem
+    em `className` (mesma propriedade, ordem indefinida no CSS gerado). */
+export function StarDivider({ className = '' }: { className?: string }) {
+  return (
+    <div aria-hidden className={`circus-divider ${className}`}>
+      <span className="text-sm">★</span>
+    </div>
+  );
+}
+
+/** Título de seção no estilo cartaz: ★ NOME ★ */
+export function PosterHeading({ children }: { children: ReactNode }) {
+  return (
+    <h2 className="circus-title mb-2 flex items-center gap-2 border-b border-border pb-1 text-sm font-bold uppercase tracking-widest text-accent">
+      <span aria-hidden>★</span>
+      {children}
+    </h2>
   );
 }
