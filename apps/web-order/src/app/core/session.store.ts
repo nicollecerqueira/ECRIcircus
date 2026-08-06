@@ -13,17 +13,31 @@ export interface CartLine {
   notes?: string;
 }
 
-/** Forma de pagamento DECLARADA pelo cliente — o caixa registra a real depois. */
-export type PaymentChoice = 'pix' | 'cash' | 'card';
+/**
+ * Forma de pagamento DECLARADA pelo cliente — o caixa registra a real depois.
+ *
+ * `account` ("colocar na conta") é a única que não é pagamento agora: o pedido
+ * fica lançado na conta da pessoa para acerto posterior.
+ */
+export type PaymentChoice = 'pix' | 'cash' | 'card' | 'account';
 
 interface DinerSession {
   orderId: string | null;
   customerName: string;
+  teamName: string;
+  /** Sala onde a pessoa está — destino da entrega. */
+  deliveryRoom: string;
   paymentChoice: PaymentChoice;
+  cashNeedsChange: boolean;
+  cashChangeFor: string;
   cart: CartLine[];
   setOrderId: (id: string) => void;
   setCustomerName: (name: string) => void;
+  setTeamName: (team: string) => void;
+  setDeliveryRoom: (room: string) => void;
   setPaymentChoice: (choice: PaymentChoice) => void;
+  setCashNeedsChange: (needsChange: boolean) => void;
+  setCashChangeFor: (value: string) => void;
   addToCart: (line: CartLine) => void;
   removeFromCart: (menuItemId: string) => void;
   clearCart: () => void;
@@ -34,11 +48,25 @@ export const useSession = create<DinerSession>()(
     (set) => ({
       orderId: null,
       customerName: '',
+      teamName: '',
+      deliveryRoom: '',
       paymentChoice: 'pix',
+      cashNeedsChange: false,
+      cashChangeFor: '',
       cart: [],
       setOrderId: (orderId) => set({ orderId }),
       setCustomerName: (customerName) => set({ customerName }),
-      setPaymentChoice: (paymentChoice) => set({ paymentChoice }),
+      setTeamName: (teamName) => set({ teamName }),
+      setDeliveryRoom: (deliveryRoom) => set({ deliveryRoom }),
+      setPaymentChoice: (paymentChoice) =>
+        set((s) => ({
+          paymentChoice,
+          ...(paymentChoice === 'cash'
+            ? {}
+            : { cashNeedsChange: false, cashChangeFor: s.cashChangeFor }),
+        })),
+      setCashNeedsChange: (cashNeedsChange) => set({ cashNeedsChange }),
+      setCashChangeFor: (cashChangeFor) => set({ cashChangeFor }),
       addToCart: (line) =>
         set((s) => {
           const existing = s.cart.find((c) => c.menuItemId === line.menuItemId);

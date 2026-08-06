@@ -1,6 +1,6 @@
 import { useParams } from '@tanstack/react-router';
 import { Art } from '../../shared/components/art';
-import { Card, Kicker, PosterHeading, Spinner, StarDivider } from '../../shared/components/ui';
+import { Badge, Card, Kicker, PosterHeading, Spinner, StarDivider } from '../../shared/components/ui';
 import { formatCents } from '../../shared/utils/money';
 import { useMenu } from '../order/order.service';
 
@@ -33,8 +33,16 @@ export function StorefrontComponent() {
               {cat.items
                 .filter((mi) => mi.available)
                 .map((mi) => (
-                  <Card key={mi.id} className="flex items-center justify-between">
-                    <span className="font-medium">{mi.name}</span>
+                  <Card key={mi.id} className="flex items-center justify-between gap-3">
+                    <span className="min-w-0">
+                      <span className="flex flex-wrap items-center gap-2 font-medium">
+                        {mi.name}
+                        {mi.isCombo && <Badge tone="primary">combo</Badge>}
+                      </span>
+                      {mi.isCombo && mi.comboItems && (
+                        <span className="mt-1 block text-sm text-muted">{mi.comboItems}</span>
+                      )}
+                    </span>
                     <span className="text-sm text-muted">{formatCents(mi.priceCents)}</span>
                   </Card>
                 ))}

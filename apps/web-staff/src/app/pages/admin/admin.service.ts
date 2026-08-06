@@ -20,6 +20,8 @@ export function useCreateMenuItem() {
       priceCents: number;
       categoryId: string;
       stationId: string;
+      isCombo?: boolean;
+      comboItems?: string;
     }) => {
       const { data } = await apiClient.post('/admin/menu', input);
       return data;
@@ -39,6 +41,8 @@ export function useUpdateMenuItem() {
       name?: string;
       priceCents?: number;
       available?: boolean;
+      isCombo?: boolean;
+      comboItems?: string;
       /** `null` remove a promoção; `undefined` deixa como está. */
       promoPriceCents?: number | null;
       promoEndsAt?: string | null;

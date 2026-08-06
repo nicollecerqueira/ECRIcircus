@@ -39,7 +39,9 @@ export function AppComponent() {
             <span aria-hidden className="text-gold">
               ★
             </span>{' '}
-            ECRI Circus — o espetáculo continua à mesa{' '}
+            {/* "Retire no balcão" era do desenho antigo. A operação entrega na
+                sala — é por isso que o app pede a sala no fechamento. */}
+            ECRI Circus — peça, receba na sua sala e aproveite o espetáculo{' '}
             <span aria-hidden className="text-gold">
               ★
             </span>

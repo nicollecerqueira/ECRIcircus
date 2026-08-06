@@ -29,7 +29,7 @@ export function MenuComponent() {
   const categories = menu.categories.filter((cat) => cat.items.length > 0);
 
   return (
-    <div className="mx-auto max-w-lg p-4 pb-28">
+    <div className="mx-auto max-w-lg p-4">
       <header className="mb-5 pt-6 text-center">
         <Art name="tent" size="md" fallback="🎪" />
         <Kicker>O grande espetáculo</Kicker>
@@ -56,9 +56,13 @@ export function MenuComponent() {
                         className={`flex flex-wrap items-center gap-2 font-medium ${mi.available ? '' : 'text-muted'}`}
                       >
                         <span className={mi.available ? '' : 'line-through'}>{mi.name}</span>
+                        {mi.isCombo && <Badge tone="primary">combo</Badge>}
                         {mi.onPromo && <Badge tone="danger">promo</Badge>}
                         {!mi.available && <Badge tone="neutral">esgotado</Badge>}
                       </p>
+                      {mi.isCombo && mi.comboItems && (
+                        <p className="mt-1 text-sm text-muted">{mi.comboItems}</p>
+                      )}
                       {mi.onPromo ? (
                         <p className="text-sm">
                           <span className="text-muted line-through">
@@ -83,6 +87,7 @@ export function MenuComponent() {
                           // servidor recongela isto ao lançar; aqui é só o que ele vê.
                           priceCents: mi.effectivePriceCents,
                           qty: 1,
+                          notes: mi.isCombo ? mi.comboItems : undefined,
                         })
                       }
                     >
@@ -104,11 +109,15 @@ export function MenuComponent() {
         <Attractions className="mt-4" />
       </div>
 
+      {/* `sticky`, não `fixed`: fixo, a barra flutua sobre a página inteira e
+          cobre o rodapé. Como último filho e grudada em `bottom-0`, ela fica
+          colada na base da tela enquanto se rola o cardápio e assenta no fim do
+          conteúdo — sem nunca passar por cima do rodapé. */}
       {cartCount > 0 && (
-        <div className="fixed inset-x-0 bottom-0 bg-surface">
+        <div className="sticky bottom-0 -mx-4 mt-8 bg-surface">
           <TentStripes />
           <div className="p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-            <Link to="/cart" className="mx-auto block max-w-lg">
+            <Link to="/cart" className="block">
               <Button className="w-full">
                 🎟️ Ver carrinho · {cartCount} {cartCount === 1 ? 'item' : 'itens'} ·{' '}
                 {formatCents(cartTotal)}

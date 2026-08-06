@@ -1,0 +1,83 @@
+# Default full stack. This lets the plain command work:
+#   docker compose up -d --build
+#
+# For hybrid development with only Postgres/Redis in Docker, keep using:
+#   docker compose -f docker-compose.dev.yml up -d
+#
+# Banco `ecri` (não mais `prato`): ver docker-compose.dev.yml para o porquê.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ecri
+      POSTGRES_PASSWORD: ecri
+      POSTGRES_DB: ecri
+    ports:
+      - "55433:5432"
+    volumes:
+      - ecri-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ecri -d ecri"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "56380:6379"
+    volumes:
+      - ecri-redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: ./apps/api
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgres://ecri:ecri@postgres:5432/ecri
+      REDIS_URL: redis://redis:6379
+      JWT_ACCESS_SECRET: dev-access-secret-change-me
+      JWT_REFRESH_SECRET: dev-refresh-secret-change-me
+      USE_STUB_DATA: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+
+  web-staff:
+    build:
+      context: ./apps/web-staff
+    depends_on:
+      - api
+    ports:
+      - "5173:80"
+
+  web-kds:
+    build:
+      context: ./apps/web-kds
+    depends_on:
+      - api
+    ports:
+      - "5174:80"
+
+  web-order:
+    build:
+      context: ./apps/web-order
+    depends_on:
+      - api
+    ports:
+      - "5175:80"
+
+volumes:
+  ecri-pgdata:
+  ecri-redisdata:

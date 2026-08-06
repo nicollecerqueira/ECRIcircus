@@ -1,0 +1,126 @@
+# Stack completa do ECRI Circus para rodar numa VM.
+#
+#   cd deploy && cp .env.example .env && nano .env    # preencha os segredos
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Diferenças para os compose de desenvolvimento, todas de propósito:
+#
+#  1. Postgres e Redis NÃO publicam porta. Ficam só na rede interna do Docker,
+#     alcançáveis pela API e por mais ninguém. Um Postgres com porta aberta na
+#     internet é varrido por robôs em questão de horas.
+#  2. A API também não publica porta: o nginx de cada app web já encaminha
+#     `/api` e `/realtime` para ela por dentro da rede (ver nginx.conf).
+#  3. Só o Caddy escuta fora — 80 e 443 — e ele resolve o HTTPS sozinho.
+#  4. `restart: unless-stopped` em tudo: a VM reinicia (atualização, queda de
+#     energia do provedor) e a operação volta sem ninguém logar por SSH.
+#  5. Senhas e segredos vêm do arquivo .env, que NÃO vai para o git.
+#
+# O nome do projeto é fixado para os volumes terem nome previsível
+# (`ecri_ecri-pgdata`) — os comandos de backup do README dependem disso, e sem
+# fixar ele viria do nome da pasta, que muda conforme onde o repo foi clonado.
+name: ecri
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ecri}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+      POSTGRES_DB: ${POSTGRES_DB:-ecri}
+    volumes:
+      - ecri-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ecri} -d ${POSTGRES_DB:-ecri}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - ecri-redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  api:
+    build:
+      context: ../apps/api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgres://${POSTGRES_USER:-ecri}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-ecri}
+      REDIS_URL: redis://redis:6379
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?defina JWT_ACCESS_SECRET no .env}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?defina JWT_REFRESH_SECRET no .env}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-7d}
+      # Origens do CORS. Na prática o navegador fala sempre com a MESMA origem
+      # (o nginx de cada app encaminha /api), então isto é cinto de segurança —
+      # vale para o dia em que algum app for servido de outro endereço.
+      WEB_STAFF_ORIGIN: https://equipe.${DOMAIN:-localhost}
+      WEB_KDS_ORIGIN: https://cozinha.${DOMAIN:-localhost}
+      WEB_ORDER_ORIGIN: https://pedido.${DOMAIN:-localhost}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web-order:
+    build:
+      context: ../apps/web-order
+    restart: unless-stopped
+    depends_on:
+      - api
+
+  web-staff:
+    build:
+      context: ../apps/web-staff
+    restart: unless-stopped
+    depends_on:
+      - api
+
+  web-kds:
+    build:
+      context: ../apps/web-kds
+    restart: unless-stopped
+    depends_on:
+      - api
+
+  # Porta de entrada única. Com domínio, emite e renova o certificado sozinho;
+  # sem domínio, o CADDYFILE do .env aponta para o arquivo que serve por porta.
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      # Sem domínio, os apps saem por estas portas (ver Caddyfile.sem-dominio).
+      - "8081:8081"
+      - "8082:8082"
+    volumes:
+      - ${CADDYFILE:-./Caddyfile}:/etc/caddy/Caddyfile:ro
+      # Certificados emitidos ficam no volume: sem ele, cada `up` pede tudo de
+      # novo e o Let's Encrypt tem limite de emissões por semana.
+      - caddy-data:/data
+      - caddy-config:/config
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+      TLS_EMAIL: ${TLS_EMAIL:-}
+    depends_on:
+      - web-order
+      - web-staff
+      - web-kds
+
+volumes:
+  ecri-pgdata:
+  ecri-redisdata:
+  caddy-data:
+  caddy-config:

@@ -5,7 +5,7 @@ import { Roles } from '../../auth/roles.decorator';
 import { PaymentMethod } from '../order/order.model';
 import { PaymentService } from './payment.service';
 
-const METHODS: PaymentMethod[] = ['cash', 'card', 'pix', 'voucher', 'other'];
+const METHODS: PaymentMethod[] = ['cash', 'card', 'pix'];
 
 class RegisterPaymentDto {
   @IsIn(METHODS)

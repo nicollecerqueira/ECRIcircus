@@ -7,11 +7,13 @@ import { OrderItem } from './domain/order-item.entity';
 import { Payment } from './domain/payment.entity';
 import { OrderController } from './order.controller';
 import { OrderService } from './order.service';
+import { ReportController } from './report.controller';
+import { ReportService } from './report.service';
 
 @Module({
   imports: [TenancyModule, CatalogModule, MikroOrmModule.forFeature([Order, OrderItem, Payment])],
-  controllers: [OrderController],
-  providers: [OrderService],
+  controllers: [OrderController, ReportController],
+  providers: [OrderService, ReportService],
   exports: [OrderService],
 })
 export class OrderModule {}

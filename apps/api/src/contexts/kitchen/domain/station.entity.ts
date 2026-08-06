@@ -6,7 +6,7 @@ import { Brand } from '../../tenancy/domain/brand.entity';
 /**
  * Estação de preparo da cozinha (Grelha, Bar, Sobremesas...). Escopada por marca.
  *
- * O `code` (ex.: "st-grill") é o identificador ESTÁVEL exposto na API e usado por
+ * O `code` (ex.: "st-lanches") é o identificador ESTÁVEL exposto na API e usado por
  * cardápio, itens de pedido e salas do KDS. A PK é UUID (padrão), mas nunca vaza:
  * quem referencia estação usa o code. Assim virar tabela não quebra nada.
  */
@@ -19,7 +19,7 @@ export class Station {
   @ManyToOne(() => Brand, { fieldName: 'tenant_id', deleteRule: 'cascade', index: true })
   tenant!: Brand;
 
-  /** Código estável (ex.: "st-grill"). Único por marca. */
+  /** Código estável (ex.: "st-lanches"). Único por marca. */
   @Property({ length: 40 })
   code!: string;
 

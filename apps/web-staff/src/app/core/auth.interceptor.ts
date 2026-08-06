@@ -29,6 +29,26 @@ async function refreshOnce(): Promise<string | null> {
   }
 }
 
+/**
+ * Sessão irrecuperável (sem refresh token, ou refresh recusado): leva ao login.
+ *
+ * Sem isto a tela ficava só dando erro — "Falha ao carregar as contas", "Não foi
+ * possível abrir a conta" — e a pessoa não tinha como saber que o problema era
+ * a sessão, porque o guard de rota só roda em navegação e ninguém navega quando
+ * a tela já está aberta. É o que acontece quando o token foi emitido para um
+ * banco que não é mais o de agora: assinatura válida, usuário inexistente.
+ *
+ * Navegação DURA (não o router): os tokens só existem em memória, então recarregar
+ * é o jeito de garantir que não sobrou estado de uma sessão morta.
+ */
+function goToLogin(): void {
+  const { pathname, search } = window.location;
+  if (pathname.startsWith('/login')) {
+    return;
+  }
+  window.location.assign(`/login?redirect=${encodeURIComponent(pathname + search)}`);
+}
+
 /** Bearer injection + transparent 401 refresh-and-retry (Angular HTTP interceptor). */
 export function setupAuthInterceptors() {
   apiClient.interceptors.request.use((config) => {
@@ -43,7 +63,10 @@ export function setupAuthInterceptors() {
     (res) => res,
     async (error: AxiosError) => {
       const original = error.config as RetriableConfig | undefined;
-      if (error.response?.status === 401 && original && !original._retried) {
+      // O próprio login/refresh fica de fora: 401 ali é senha errada, e mandar
+      // para o login quem já está no login viraria recarga infinita.
+      const isAuthCall = original?.url?.startsWith('/auth/') ?? false;
+      if (error.response?.status === 401 && original && !original._retried && !isAuthCall) {
         original._retried = true;
         refreshing ??= refreshOnce().finally(() => {
           refreshing = null;
@@ -53,6 +76,7 @@ export function setupAuthInterceptors() {
           original.headers.Authorization = `Bearer ${newToken}`;
           return apiClient(original);
         }
+        goToLogin();
       }
       return Promise.reject(error);
     },

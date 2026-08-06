@@ -25,7 +25,7 @@ export function LoginComponent() {
     formState: { errors },
   } = useForm<LoginForm>({
     resolver: zodResolver(schema),
-    defaultValues: { email: lastEmail ?? 'kitchen@demo.prato.app', password: '' },
+    defaultValues: { email: lastEmail ?? 'kitchen@ecricircus.app', password: '' },
   });
 
   const onSubmit = handleSubmit((values) => {
@@ -69,7 +69,9 @@ export function LoginComponent() {
         <Button type="submit" className="w-full" disabled={login.isPending}>
           {login.isPending ? 'Entrando…' : 'Entrar'}
         </Button>
-        <p className="text-center text-xs text-muted">Demo: kitchen@demo.prato.app · prato123</p>
+        <p className="text-center text-xs text-muted">
+          Cozinha: kitchen@ecricircus.app · senha ecri123
+        </p>
       </form>
     </div>
   );

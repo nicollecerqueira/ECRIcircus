@@ -1,5 +1,10 @@
 import { z } from 'zod';
 
+const optionalText = z
+  .string()
+  .nullish()
+  .transform((v) => v ?? undefined);
+
 export const menuSchema = z.object({
   categories: z
     .object({
@@ -13,6 +18,8 @@ export const menuSchema = z.object({
           priceCents: z.number(),
           /** Preço que o cliente paga agora (o "por") — já considera promoção ativa. */
           effectivePriceCents: z.number(),
+          isCombo: z.boolean().default(false),
+          comboItems: optionalText,
           onPromo: z.boolean(),
           available: z.boolean(),
           stationId: z.string(),
@@ -25,6 +32,12 @@ export type Menu = z.infer<typeof menuSchema>;
 
 export const orderSchema = z.object({
   id: z.string(),
+  customerName: optionalText,
+  teamName: optionalText,
+  deliveryRoom: optionalText,
+  paymentIntent: z.enum(['pix', 'cash', 'card', 'account']).optional(),
+  cashNeedsChange: z.boolean().nullish().transform((v) => v ?? undefined),
+  cashChangeForCents: z.number().nullish().transform((v) => v ?? undefined),
   status: z.string(),
   items: z
     .object({

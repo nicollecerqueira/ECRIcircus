@@ -15,7 +15,7 @@ export class Migration20260721000006Station extends Migration {
       );
     `);
     this.addSql('create index if not exists idx_stations_tenant on stations (tenant_id);');
-    // Código único por marca — dois tenants podem ter "st-grill" cada um.
+    // Código único por marca — dois tenants podem ter "st-lanches" cada um.
     this.addSql(
       'create unique index if not exists uq_stations_tenant_code on stations (tenant_id, code);',
     );

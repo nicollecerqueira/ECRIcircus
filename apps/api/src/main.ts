@@ -34,12 +34,12 @@ async function bootstrap() {
 
   // Redis-backed Socket.IO (falls back to in-memory if Redis is down).
   const redisAdapter = new RedisIoAdapter(app);
-  await redisAdapter.connect(config.get<string>('REDIS_URL') ?? 'redis://localhost:56379');
+  await redisAdapter.connect(config.get<string>('REDIS_URL') ?? 'redis://localhost:56380');
   app.useWebSocketAdapter(redisAdapter);
 
   const port = Number(config.get('PORT') ?? 3000);
   await app.listen(port);
-  app.get(Logger).log(`Prato API on http://localhost:${port}/api/v1`);
+  app.get(Logger).log(`ECRI Circus API on http://localhost:${port}/api/v1`);
 }
 
 void bootstrap();

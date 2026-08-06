@@ -17,7 +17,7 @@ interface AuthState {
   clear: () => void;
 }
 
-const LAST_EMAIL_KEY = 'prato.kds.lastEmail';
+const LAST_EMAIL_KEY = 'ecri.kds.lastEmail';
 
 export const useAuthStore = create<AuthState>((set) => ({
   accessToken: null,

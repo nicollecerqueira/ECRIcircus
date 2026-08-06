@@ -3,6 +3,7 @@ import { apiClient } from '../../core/api.client';
 import { LOCATION_ID } from '../../core/config';
 import { realtime } from '../../core/realtime.service';
 import { type CartLine, useSession } from '../../core/session.store';
+import { parseMoneyToCents } from '../../shared/utils/money';
 import { type DinerOrder, type Menu, menuSchema, orderSchema } from './order.model';
 
 /**
@@ -33,8 +34,28 @@ export function useSubmitOrder() {
   const { setOrderId, clearCart } = useSession.getState();
   return useMutation({
     mutationFn: async (lines: CartLine[]) => {
+      // Nome e forma de pagamento vão junto na criação: o nome identifica a
+      // conta no salão (sem mesa, não haveria como se referir ao pedido a não
+      // ser pelo id), e `paymentIntent: 'account'` faz a API somar este pedido
+      // à conta que a pessoa já tem aberta em vez de abrir outra.
+      const {
+        customerName,
+        teamName,
+        deliveryRoom,
+        paymentChoice,
+        cashNeedsChange,
+        cashChangeFor,
+      } = useSession.getState();
+      const cashChangeForCents = parseMoneyToCents(cashChangeFor);
       const { data: order } = await apiClient.post<{ id: string }>('/orders', {
         channel: 'counter',
+        customerName: customerName.trim() || undefined,
+        teamName: teamName || undefined,
+        deliveryRoom: deliveryRoom.trim() || undefined,
+        paymentIntent: paymentChoice,
+        cashNeedsChange: paymentChoice === 'cash' ? cashNeedsChange : undefined,
+        cashChangeForCents:
+          paymentChoice === 'cash' && cashNeedsChange ? (cashChangeForCents ?? undefined) : undefined,
       });
       for (const line of lines) {
         await apiClient.post(`/orders/${order.id}/items`, {

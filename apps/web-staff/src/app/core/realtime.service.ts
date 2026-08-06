@@ -31,17 +31,17 @@ class RealtimeService {
       this.qc.invalidateQueries();
     });
 
-    this.socket.on('item.ready', (p: { orderId: string }) => {
+    // Todos invalidam a LISTA também: a API põe o staff na sala da unidade, então
+    // chega evento de qualquer conta — inclusive das que esta aba nunca abriu, que
+    // era justamente o buraco (a conta mexida pelo app do cliente não atualizava).
+    const touched = (p: { orderId: string }) => {
       this.qc.invalidateQueries({ queryKey: ['order', p.orderId] });
       this.qc.invalidateQueries({ queryKey: ['orders'] });
-    });
-    this.socket.on('item.preparing', (p: { orderId: string }) => {
-      this.qc.invalidateQueries({ queryKey: ['order', p.orderId] });
-    });
-    this.socket.on('order.updated', (p: { orderId: string }) => {
-      this.qc.invalidateQueries({ queryKey: ['order', p.orderId] });
-      this.qc.invalidateQueries({ queryKey: ['orders'] });
-    });
+    };
+    this.socket.on('item.fired', touched);
+    this.socket.on('item.ready', touched);
+    this.socket.on('item.preparing', touched);
+    this.socket.on('order.updated', touched);
     this.socket.on('order.paid', (p: { orderId: string }) => {
       this.qc.invalidateQueries({ queryKey: ['order', p.orderId] });
       this.qc.invalidateQueries({ queryKey: ['orders'] });

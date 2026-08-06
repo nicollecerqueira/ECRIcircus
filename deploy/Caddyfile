@@ -1,34 +1,39 @@
-# Reverse-proxy sketch. Host-based tenant routing; /api and /realtime -> api.
-# WebSocket upgrade is handled transparently by Caddy's reverse_proxy.
+# Proxy do ECRI Circus — COM domínio próprio.
+#
+# Cada app num subdomínio, e não em caminhos (/staff, /kds) do mesmo host: os
+# três são SPAs que assumem estar na raiz, e servi-los de um subcaminho quebraria
+# as rotas internas de cada um.
+#
+# O HTTPS é automático: o Caddy pede o certificado ao Let's Encrypt no primeiro
+# acesso e renova sozinho. Para isso, os três subdomínios precisam de registro A
+# apontando para o IP da VM ANTES de subir a stack.
+#
+# `/api` e `/realtime` não aparecem aqui: o nginx dentro de cada imagem web já
+# encaminha essas rotas para a API pela rede interna. Uma camada a menos, e o
+# navegador conversa sempre com a mesma origem.
 
-*.prato.app {
-	tls {
-		on_demand
-	}
-
-	# API + real-time gateway
-	handle /api/* {
-		reverse_proxy api:3000
-	}
-	handle /realtime/* {
-		reverse_proxy api:3000
-	}
-
-	# Public diner surface (QR + storefront)
-	handle /d/* {
-		reverse_proxy web-order:80
-	}
-	handle /t/* {
-		reverse_proxy web-order:80
-	}
-
-	# Authenticated staff back-of-house (default)
-	handle {
-		reverse_proxy web-staff:80
-	}
+{
+	# E-mail do Let's Encrypt (avisos de expiração). Vazio = conta anônima.
+	email {$TLS_EMAIL}
 }
 
-# Kitchen display on its own host per location deployment.
-kds.prato.app {
+# Cliente — quem pede a comida. É o endereço que vai no cartaz/QR do evento.
+pedido.{$DOMAIN} {
+	reverse_proxy web-order:80
+}
+
+# Equipe — balcão, caixa, cardápio e contas de acesso.
+equipe.{$DOMAIN} {
+	reverse_proxy web-staff:80
+}
+
+# Cozinha — o painel que fica na TV.
+cozinha.{$DOMAIN} {
 	reverse_proxy web-kds:80
+}
+
+# Domínio sem prefixo cai no app do cliente: é para ele que as pessoas do evento
+# vão digitar o endereço "no chute".
+{$DOMAIN} {
+	reverse_proxy web-order:80
 }

@@ -10,8 +10,8 @@ test.describe('order → kitchen → payment loop', () => {
   // stack de CI e os seletores estiverem definidos.
   test.fixme('waiter fires an item and it reaches the KDS', async ({ page }) => {
     await page.goto('/login');
-    await page.getByRole('textbox', { name: /e-mail/i }).fill('waiter@demo.prato.app');
-    await page.getByRole('textbox', { name: /senha/i }).fill('prato123');
+    await page.getByRole('textbox', { name: /e-mail/i }).fill('waiter@ecricircus.app');
+    await page.getByRole('textbox', { name: /senha/i }).fill('ecri123');
     await page.getByRole('button', { name: /entrar/i }).click();
     await expect(page).toHaveURL(/\/floor/);
     // TODO: open a table, add an item, then assert the KDS board (STAFF_URL/KDS_URL)

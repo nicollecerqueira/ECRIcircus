@@ -15,16 +15,20 @@ pnpm dev            # http://localhost:3000/api/v1  (WS on /realtime)
 ```
 Redis is optional in the skeleton (the Socket.IO adapter falls back to in-memory).
 
-## Demo login
-All demo users share the password `prato123`:
+## Login
+Contas semeadas no primeiro boot com banco vazio (marca **ECRI Circus**), todas
+com a senha `ecri123` — trocar antes de usar em evento de verdade:
 
 | Email | Role |
 |-------|------|
-| `owner@demo.prato.app` | brand_owner |
-| `manager@demo.prato.app` | location_manager |
-| `waiter@demo.prato.app` | waiter |
-| `cashier@demo.prato.app` | cashier |
-| `kitchen@demo.prato.app` | kitchen |
+| `owner@ecricircus.app` | brand_owner |
+| `manager@ecricircus.app` | location_manager |
+| `waiter@ecricircus.app` | waiter |
+| `cashier@ecricircus.app` | cashier |
+| `kitchen@ecricircus.app` | kitchen |
+
+O banco é o do ECRI (`postgres://ecri:ecri@localhost:55433/ecri`), separado do
+banco `prato` da porta 55432.
 
 ## Layout (DDD / hexagonal)
 ```

@@ -11,7 +11,7 @@ import { User } from './domain/user.entity';
 export const TENANT_B_ID = '33333333-3333-3333-3333-333333333333';
 export const LOCATION_B_ID = '44444444-4444-4444-4444-444444444444';
 
-export const DEMO_PASSWORD = 'prato123';
+export const SEED_PASSWORD = 'ecri123';
 
 interface SeedUser {
   email: string;
@@ -19,22 +19,32 @@ interface SeedUser {
   role: string;
 }
 
+/**
+ * Contas de partida da operação do ECRI. São por FUNÇÃO, não por pessoa: quem
+ * fica no balcão muda a cada evento, e uma conta chamada "Carla" que hoje é
+ * usada pelo João só atrapalha na hora de saber quem lançou o quê.
+ */
 const BRAND_A_USERS: SeedUser[] = [
-  { email: 'owner@demo.prato.app', name: 'Ana (Dona)', role: Role.BrandOwner },
-  { email: 'manager@demo.prato.app', name: 'Bruno (Gerente)', role: Role.LocationManager },
-  { email: 'waiter@demo.prato.app', name: 'Carla (Garçom)', role: Role.Waiter },
-  { email: 'cashier@demo.prato.app', name: 'Diego (Caixa)', role: Role.Cashier },
-  { email: 'kitchen@demo.prato.app', name: 'Cozinha', role: Role.Kitchen },
+  { email: 'owner@ecricircus.app', name: 'Direção', role: Role.BrandOwner },
+  { email: 'manager@ecricircus.app', name: 'Coordenação', role: Role.LocationManager },
+  { email: 'waiter@ecricircus.app', name: 'Balcão', role: Role.Waiter },
+  { email: 'cashier@ecricircus.app', name: 'Caixa', role: Role.Cashier },
+  { email: 'kitchen@ecricircus.app', name: 'Cozinha', role: Role.Kitchen },
 ];
 
 const BRAND_B_USERS: SeedUser[] = [
-  { email: 'owner@bella.prato.app', name: 'Elena (Dona)', role: Role.BrandOwner },
-  { email: 'waiter@bella.prato.app', name: 'Fábio (Garçom)', role: Role.Waiter },
+  { email: 'owner@vizinho.ecricircus.app', name: 'Direção (vizinho)', role: Role.BrandOwner },
+  { email: 'waiter@vizinho.ecricircus.app', name: 'Balcão (vizinho)', role: Role.Waiter },
 ];
 
 /**
- * Semeia DUAS marcas distintas no boot. Um tenant só nunca prova isolamento —
- * é preciso existir dado do vizinho para que "não vejo o vizinho" signifique algo.
+ * Semeia DUAS marcas distintas no boot: o ECRI Circus e um "vizinho". Um tenant
+ * só nunca prova isolamento — é preciso existir dado do vizinho para que "não
+ * vejo o vizinho" signifique algo.
+ *
+ * Só roda em banco vazio (`existing > 0` aborta), então trocar estes valores NÃO
+ * mexe num banco já semeado: é preciso banco novo — que foi exatamente o motivo
+ * de o ECRI passar a ter o seu (ver docker-compose.dev.yml).
  */
 @Injectable()
 export class TenancySeedService implements OnModuleInit {
@@ -51,18 +61,18 @@ export class TenancySeedService implements OnModuleInit {
       return;
     }
 
-    const passwordHash = bcrypt.hashSync(DEMO_PASSWORD, 8);
+    const passwordHash = bcrypt.hashSync(SEED_PASSWORD, 8);
 
     const brandA = em.create(Brand, {
       id: DEMO_TENANT_ID,
-      name: 'Prato Demo',
-      slug: 'demo',
+      name: 'ECRI Circus',
+      slug: 'ecri',
       createdAt: new Date(),
     });
     const locationA = em.create(Location, {
       id: DEMO_LOCATION_ID,
       tenant: brandA,
-      name: 'Unidade Centro',
+      name: 'Cantina do Circo',
       timezone: 'America/Sao_Paulo',
       currency: 'BRL',
       createdAt: new Date(),
@@ -70,14 +80,14 @@ export class TenancySeedService implements OnModuleInit {
 
     const brandB = em.create(Brand, {
       id: TENANT_B_ID,
-      name: 'Cantina Bella',
-      slug: 'bella',
+      name: 'Circo Vizinho',
+      slug: 'vizinho',
       createdAt: new Date(),
     });
     const locationB = em.create(Location, {
       id: LOCATION_B_ID,
       tenant: brandB,
-      name: 'Bella Jardins',
+      name: 'Barraca do Vizinho',
       timezone: 'America/Sao_Paulo',
       currency: 'BRL',
       createdAt: new Date(),
@@ -107,6 +117,6 @@ export class TenancySeedService implements OnModuleInit {
     }
 
     await em.flush();
-    this.logger.log('Seed de tenancy criado: 2 marcas (demo, bella)');
+    this.logger.log('Seed de tenancy criado: 2 marcas (ecri, vizinho)');
   }
 }

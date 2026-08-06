@@ -10,7 +10,6 @@ import { isAuthenticated } from './core/auth.service';
 import { kdsGuard } from './guards/auth.guard';
 import { LoginComponent } from './pages/login/login.component';
 import { StationBoardComponent } from './pages/station/station-board.component';
-import { StationPickerComponent } from './pages/station/station-picker.component';
 
 const rootRoute = createRootRoute({ component: Outlet });
 
@@ -33,15 +32,16 @@ const shellRoute = createRoute({
 const pickerRoute = createRoute({
   getParentRoute: () => shellRoute,
   path: '/',
-  component: StationPickerComponent,
+  component: StationBoardComponent,
   beforeLoad: kdsGuard,
 });
 
 const boardRoute = createRoute({
   getParentRoute: () => shellRoute,
   path: '/station/$id',
-  component: StationBoardComponent,
-  beforeLoad: kdsGuard,
+  beforeLoad: () => {
+    throw redirect({ to: '/' });
+  },
 });
 
 const catchAllRoute = createRoute({

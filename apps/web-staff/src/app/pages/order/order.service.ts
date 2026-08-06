@@ -41,12 +41,24 @@ export function useOrder(orderId: string | undefined) {
 }
 
 export function useCreateOrder() {
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { channel: Order['channel']; tableId?: string }) => {
+    mutationFn: async (input: {
+      channel: Order['channel'];
+      tableId?: string;
+      customerName?: string;
+      teamName?: string;
+    }) => {
       const { data } = await apiClient.post<Order>('/orders', input);
       return orderSchema.parse(data);
     },
-    onSuccess: (order) => realtime().subscribe('order', order.id),
+    onSuccess: (order) => {
+      realtime().subscribe('order', order.id);
+      // Sem isto, a conta recém-aberta só aparecia no salão no próximo refetch
+      // (até 15s): quem volta do pedido não via a própria conta que acabou de
+      // abrir, e a contagem da equipe ficava um atrás.
+      qc.invalidateQueries({ queryKey: ['orders'] });
+    },
   });
 }
 

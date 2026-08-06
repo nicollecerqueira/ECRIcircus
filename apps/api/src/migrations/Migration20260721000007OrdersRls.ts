@@ -6,9 +6,9 @@ import { Migration } from '@mikro-orm/migrations';
  * Habilita RLS + FORCE + policy por tenant e cria uma role RESTRITA (não
  * superuser, não bypassrls) para a API conectar quando o RLS for efetivado.
  *
- * Seguro por quê: a API hoje conecta como `prato` (superuser), que BYPASSA RLS —
+ * Seguro por quê: a API hoje conecta como `ecri` (superuser), que BYPASSA RLS —
  * então habilitar isto não muda o comportamento do app. A prova roda com a role
- * `prato_rls`. Para EFETIVAR o RLS, a API precisa (1) conectar como `prato_rls` e
+ * `ecri_rls`. Para EFETIVAR o RLS, a API precisa (1) conectar como `ecri_rls` e
  * (2) setar `app.tenant_id` por requisição (SET LOCAL numa transação) — ver rls.md.
  */
 export class Migration20260721000007OrdersRls extends Migration {
@@ -25,21 +25,21 @@ export class Migration20260721000007OrdersRls extends Migration {
     // Role restrita de aplicação, sujeita a RLS. Role é objeto de cluster: idempotente.
     this.addSql(`
       do $$ begin
-        if not exists (select 1 from pg_roles where rolname = 'prato_rls') then
-          create role prato_rls login password 'prato_rls';
+        if not exists (select 1 from pg_roles where rolname = 'ecri_rls') then
+          create role ecri_rls login password 'ecri_rls';
         end if;
       end $$;
     `);
-    this.addSql('grant usage on schema public to prato_rls;');
-    this.addSql('grant select, insert, update, delete on orders to prato_rls;');
+    this.addSql('grant usage on schema public to ecri_rls;');
+    this.addSql('grant select, insert, update, delete on orders to ecri_rls;');
   }
 
   async down(): Promise<void> {
     this.addSql('drop policy if exists tenant_isolation on orders;');
     this.addSql('alter table orders no force row level security;');
     this.addSql('alter table orders disable row level security;');
-    this.addSql('revoke all on orders from prato_rls;');
-    this.addSql('revoke usage on schema public from prato_rls;');
+    this.addSql('revoke all on orders from ecri_rls;');
+    this.addSql('revoke usage on schema public from ecri_rls;');
     // A role não é dropada no down: no rollout ela ganha grants em outras tabelas.
   }
 }

@@ -19,7 +19,7 @@ import { User } from './contexts/tenancy/domain/user.entity';
  * A terceira camada (RLS no Postgres) entra depois, como reforço.
  */
 export default defineConfig({
-  clientUrl: process.env.DATABASE_URL ?? 'postgres://prato:prato@localhost:55432/prato',
+  clientUrl: process.env.DATABASE_URL ?? 'postgres://ecri:ecri@localhost:55433/ecri',
   entities: [
     Brand,
     Location,

@@ -6,6 +6,7 @@ export const PAYMENT_LABEL: Record<PaymentChoice, string> = {
   pix: 'Pix',
   cash: 'Dinheiro',
   card: 'Cartão',
+  account: 'Colocar na conta',
 };
 
 /** Linha do relatório. Serve tanto para o carrinho local quanto para os itens
@@ -19,7 +20,11 @@ export interface ReportLine {
 interface Report {
   orderId: string;
   customerName: string;
+  teamName: string;
+  deliveryRoom: string;
   paymentChoice: PaymentChoice;
+  cashNeedsChange?: boolean;
+  cashChangeForCents?: number;
   lines: ReportLine[];
 }
 
@@ -31,22 +36,42 @@ interface Report {
  * atende. Os 8 primeiros caracteres do id bastam para casar com o pedido no
  * caixa sem poluir a mensagem.
  */
-export function buildOrderReport({ orderId, customerName, paymentChoice, lines }: Report): string {
+export function buildOrderReport({
+  orderId,
+  customerName,
+  teamName,
+  deliveryRoom,
+  paymentChoice,
+  cashNeedsChange,
+  cashChangeForCents,
+  lines,
+}: Report): string {
   const total = lines.reduce((sum, l) => sum + l.priceCents * l.qty, 0);
   const items = lines.map((l) => `• ${l.qty}x ${l.name} — ${formatCents(l.priceCents * l.qty)}`);
+  const cashChangeLine =
+    paymentChoice !== 'cash'
+      ? null
+      : cashNeedsChange
+        ? `Troco para: ${formatCents(cashChangeForCents ?? 0)}`
+        : 'Troco: não precisa';
 
   return [
     '🎪 *ECRI Circus — novo pedido*',
     '',
     `Pedido: #${orderId.slice(0, 8)}`,
     `Cliente: ${customerName.trim() || 'não informado'}`,
+    `Equipe: ${teamName || 'não informada'}`,
+    `Entregar em: ${deliveryRoom.trim() || 'não informada'}`,
     '',
     'Itens:',
     ...items,
     '',
     `Total: ${formatCents(total)}`,
     `Pagamento: ${PAYMENT_LABEL[paymentChoice]}`,
-  ].join('\n');
+    cashChangeLine,
+  ]
+    .filter((line): line is string => line !== null)
+    .join('\n');
 }
 
 /**

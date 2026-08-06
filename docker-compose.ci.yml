@@ -3,11 +3,11 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: prato
-      POSTGRES_PASSWORD: prato
-      POSTGRES_DB: prato_ci
+      POSTGRES_USER: ecri
+      POSTGRES_PASSWORD: ecri
+      POSTGRES_DB: ecri_ci
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U prato -d prato_ci"]
+      test: ["CMD-SHELL", "pg_isready -U ecri -d ecri_ci"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -26,7 +26,7 @@ services:
     environment:
       NODE_ENV: test
       PORT: 3000
-      DATABASE_URL: postgres://prato:prato@postgres:5432/prato_ci
+      DATABASE_URL: postgres://ecri:ecri@postgres:5432/ecri_ci
       REDIS_URL: redis://redis:6379
       JWT_ACCESS_SECRET: ci-access-secret
       JWT_REFRESH_SECRET: ci-refresh-secret

@@ -35,20 +35,20 @@ CREATE POLICY tenant_isolation ON orders
 ## Status (Fase 9) — prova em `orders`
 
 A migration `Migration20260721000007OrdersRls` habilita RLS + `FORCE` + a policy
-`tenant_isolation` em **`orders`**, e cria a role restrita **`prato_rls`** (não
+`tenant_isolation` em **`orders`**, e cria a role restrita **`ecri_rls`** (não
 superuser, não bypassrls).
 
-Provado ao vivo, conectado como `prato_rls`:
+Provado ao vivo, conectado como `ecri_rls`:
 - sem `app.tenant_id` → **0 linhas** (fail-closed);
 - `SET app.tenant_id` da marca A → só pedidos da marca A; da marca B → só da B;
 - `INSERT` de um pedido de outro tenant → `new row violates row-level security policy`.
 
-A API **hoje conecta como `prato` (superuser)**, que bypassa RLS — por isso
+A API **hoje conecta como `ecri` (superuser)**, que bypassa RLS — por isso
 habilitar isto não alterou o comportamento do app. É uma segunda trava latente,
 pronta para ser efetivada.
 
 ### Rollout para efetivar (todas as tabelas)
-1. **Conectar como `prato_rls`** em vez de `prato` (novo `DATABASE_URL` de runtime).
+1. **Conectar como `ecri_rls`** em vez de `ecri` (novo `DATABASE_URL` de runtime).
    Migrations e seeds continuam rodando como owner/superuser (operam cross-tenant
    no boot).
 2. **Setar o GUC por requisição**: envolver a request num `em.transactional(...)`

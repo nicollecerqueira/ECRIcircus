@@ -11,8 +11,8 @@ import { type APIRequestContext, expect, test } from '@playwright/test';
  */
 const API = process.env.API_URL ?? 'http://localhost:3000/api/v1';
 
-const TENANT_A = { email: 'owner@demo.prato.app', password: 'prato123', brand: 'Prato Demo' };
-const TENANT_B = { email: 'owner@bella.prato.app', password: 'prato123', brand: 'Cantina Bella' };
+const TENANT_A = { email: 'owner@ecricircus.app', password: 'ecri123', brand: 'ECRI Circus' };
+const TENANT_B = { email: 'owner@vizinho.ecricircus.app', password: 'ecri123', brand: 'Circo Vizinho' };
 
 async function login(request: APIRequestContext, creds: typeof TENANT_A) {
   // Só email/senha: a API roda ValidationPipe com forbidNonWhitelisted, então
@@ -90,12 +90,12 @@ test.describe('isolamento entre tenants', () => {
     expect(semEscopo.status()).toBe(400);
 
     // Com a marca declarada, devolve só o cardápio daquela marca.
-    const bella = await request.get(`${API}/menu?brand=bella`).then((r) => r.json());
-    const nomes = bella.categories.flatMap((c: { items: { name: string }[] }) =>
+    const vizinho = await request.get(`${API}/menu?brand=vizinho`).then((r) => r.json());
+    const nomes = vizinho.categories.flatMap((c: { items: { name: string }[] }) =>
       c.items.map((i) => i.name),
     );
-    expect(nomes).toContain('Cacio e pepe');
-    expect(nomes).not.toContain('Picanha na chapa');
+    expect(nomes).toContain('Espetinho');
+    expect(nomes).not.toContain('Cachorro-quente');
   });
 
   test('um tenant não altera item de cardápio do outro', async ({ request }) => {

@@ -65,9 +65,31 @@ export function LoginComponent() {
         <Button type="submit" className="w-full" disabled={login.isPending}>
           {login.isPending ? 'Entrando…' : 'Entrar'}
         </Button>
-        <p className="text-center text-xs text-muted">
-          Demo: qualquer usuário @demo.prato.app · senha prato123
-        </p>
+        {/* A lista é COMPLETA de propósito: mostrar só duas contas fazia parecer
+            que as outras não existiam — quem precisava do cardápio não achava a
+            conta que abre o admin. */}
+        <div className="rounded-lg bg-surface-2 p-3 text-xs text-muted">
+          <p className="text-center font-semibold text-fg">
+            Contas do ECRI · senha <span className="font-mono">ecri123</span>
+          </p>
+          <ul className="mt-2 space-y-0.5">
+            <li>
+              <span className="font-medium text-fg">owner@</span> — dono: salão, caixa e cardápio
+            </li>
+            <li>
+              <span className="font-medium text-fg">manager@</span> — gerência: o mesmo que o dono
+            </li>
+            <li>
+              <span className="font-medium text-fg">waiter@</span> — balcão: salão e pedidos
+            </li>
+            <li>
+              <span className="font-medium text-fg">cashier@</span> — caixa: salão e pagamentos
+            </li>
+          </ul>
+          <p className="mt-2 text-center">
+            todas terminam em <span className="font-medium text-fg">@ecricircus.app</span>
+          </p>
+        </div>
       </form>
     </div>
   );

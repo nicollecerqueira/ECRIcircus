@@ -12,46 +12,57 @@ interface SeedCategory {
   items: { name: string; priceCents: number; stationId: string; available?: boolean }[];
 }
 
+/**
+ * Cardápio de PARTIDA da cantina do ECRI — só existe para o banco novo não nascer
+ * vazio (app sem item nenhum parece app quebrado). Itens, preços e combos do
+ * evento se ajustam na tela de admin (`/admin/menu`), que grava no banco; mexer
+ * aqui depois disso não muda nada, porque o seed só roda em banco vazio.
+ */
 const BRAND_A_MENU: SeedCategory[] = [
   {
-    name: 'Pratos principais',
+    name: 'Lanches',
     sortOrder: 1,
     items: [
-      { name: 'Hambúrguer artesanal', priceCents: 3200, stationId: 'st-grill' },
-      { name: 'Picanha na chapa', priceCents: 5800, stationId: 'st-grill' },
-      { name: 'Batata frita', priceCents: 1800, stationId: 'st-grill' },
+      { name: 'Cachorro-quente', priceCents: 800, stationId: 'st-lanches' },
+      { name: 'Misto quente', priceCents: 600, stationId: 'st-lanches' },
+      { name: 'Pastel', priceCents: 700, stationId: 'st-lanches' },
+      { name: 'Pipoca', priceCents: 500, stationId: 'st-lanches' },
     ],
   },
   {
     name: 'Bebidas',
     sortOrder: 2,
     items: [
-      { name: 'Refrigerante', priceCents: 900, stationId: 'st-bar' },
-      { name: 'Chopp', priceCents: 1400, stationId: 'st-bar' },
-      { name: 'Suco natural', priceCents: 1200, stationId: 'st-bar', available: false },
+      { name: 'Refrigerante lata', priceCents: 500, stationId: 'st-bebidas' },
+      { name: 'Suco', priceCents: 400, stationId: 'st-bebidas' },
+      { name: 'Água', priceCents: 300, stationId: 'st-bebidas' },
     ],
   },
   {
-    name: 'Sobremesas',
+    name: 'Doces',
     sortOrder: 3,
-    items: [{ name: 'Pudim', priceCents: 1600, stationId: 'st-dessert' }],
+    items: [
+      { name: 'Algodão doce', priceCents: 500, stationId: 'st-doces' },
+      { name: 'Picolé', priceCents: 400, stationId: 'st-doces' },
+      { name: 'Brigadeiro', priceCents: 300, stationId: 'st-doces' },
+    ],
   },
 ];
 
 /** Cardápio deliberadamente diferente: torna visível se um tenant vazar no outro. */
 const BRAND_B_MENU: SeedCategory[] = [
   {
-    name: 'Massas',
+    name: 'Salgados do vizinho',
     sortOrder: 1,
     items: [
-      { name: 'Cacio e pepe', priceCents: 4900, stationId: 'st-grill' },
-      { name: 'Lasanha da nonna', priceCents: 5400, stationId: 'st-grill' },
+      { name: 'Espetinho', priceCents: 1200, stationId: 'st-lanches' },
+      { name: 'Caldo', priceCents: 1000, stationId: 'st-lanches' },
     ],
   },
   {
-    name: 'Vinhos',
+    name: 'Bebidas do vizinho',
     sortOrder: 2,
-    items: [{ name: 'Chianti (taça)', priceCents: 2600, stationId: 'st-bar' }],
+    items: [{ name: 'Chá gelado', priceCents: 600, stationId: 'st-bebidas' }],
   },
 ];
 
@@ -98,6 +109,7 @@ export class CatalogSeedService implements OnModuleInit {
           category,
           name: item.name,
           priceCents: item.priceCents,
+          isCombo: false,
           stationId: item.stationId,
           available: item.available ?? true,
           createdAt: new Date(),

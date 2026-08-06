@@ -11,7 +11,18 @@ import { Location } from '../tenancy/domain/location.entity';
 import { Order as OrderEntity } from './domain/order.entity';
 import { OrderItem as OrderItemEntity } from './domain/order-item.entity';
 import { Payment as PaymentEntity } from './domain/payment.entity';
-import type { Order, OrderChannel, PaymentMethod } from './order.model';
+import type { Order, OrderChannel, PaymentIntent, PaymentMethod } from './order.model';
+
+export interface CreateOrderInput {
+  channel: OrderChannel;
+  tableId?: string;
+  customerName?: string;
+  teamName?: string;
+  deliveryRoom?: string;
+  paymentIntent?: PaymentIntent;
+  cashNeedsChange?: boolean;
+  cashChangeForCents?: number;
+}
 
 /**
  * Entidade → view (o formato plano que Cozinha, Pagamento e os fronts consomem).
@@ -30,6 +41,12 @@ function toOrderView(o: OrderEntity): Order {
     locationId: o.location.id,
     channel: o.channel,
     tableId: o.tableId ?? undefined,
+    customerName: o.customerName ?? undefined,
+    teamName: o.teamName ?? undefined,
+    deliveryRoom: o.deliveryRoom ?? undefined,
+    paymentIntent: o.paymentIntent ?? undefined,
+    cashNeedsChange: o.cashNeedsChange ?? undefined,
+    cashChangeForCents: o.cashChangeForCents ?? undefined,
     status: o.status,
     items: o.items
       .getItems()
@@ -102,16 +119,57 @@ export class OrderService {
     return toOrderView(await this.getEntity(id));
   }
 
-  create(input: { channel: OrderChannel; tableId?: string }): Promise<Order> {
+  create(input: CreateOrderInput): Promise<Order> {
     return this.doCreate(input);
   }
 
-  private async doCreate(input: { channel: OrderChannel; tableId?: string }): Promise<Order> {
+  private async doCreate(input: CreateOrderInput): Promise<Order> {
+    if (input.paymentIntent === 'cash' && input.cashNeedsChange && !input.cashChangeForCents) {
+      throw new BadRequestException('Informe o valor para troco');
+    }
+
     // UMA conta aberta por mesa. Garçom, cliente no QR e POS têm de cair todos no
     // MESMO pedido (business-rules.md). Sem isto, a conta da mesa se dividiria.
     if (input.tableId) {
       const existing = await this.findOpenEntityByTable(input.tableId);
       if (existing) {
+        return this.viewOf(existing);
+      }
+    }
+
+    // E UMA conta aberta por PESSOA. Cada pedido de quem já tem conta aberta cai
+    // nela, seja qual for a forma de pagamento declarada: a conta é da pessoa,
+    // não da compra. Sem isto, cada pedido nasce como uma conta nova com o mesmo
+    // nome e o caixa acaba cobrando pedaços soltos em vez da conta inteira.
+    const name = input.customerName?.trim();
+    if (name) {
+      const existing = await this.findOpenAccountByCustomer(name);
+      if (existing) {
+        // A última declaração vale: se a pessoa pagou pix no primeiro pedido e
+        // agora pediu para pôr na conta, o caixa precisa ver o estado atual.
+        if (input.paymentIntent) {
+          existing.paymentIntent = input.paymentIntent;
+          existing.cashNeedsChange =
+            input.paymentIntent === 'cash' ? input.cashNeedsChange : undefined;
+          existing.cashChangeForCents =
+            input.paymentIntent === 'cash' && input.cashNeedsChange
+              ? input.cashChangeForCents
+              : undefined;
+        }
+        // Idem para a sala: a pessoa circula, e a entrega tem de ir para onde
+        // ela está AGORA, não para onde estava no primeiro pedido.
+        if (input.deliveryRoom?.trim()) {
+          existing.deliveryRoom = input.deliveryRoom.trim();
+        }
+        // Equipe informada depois preenche a que faltava, mas nunca sobrescreve
+        // uma já registrada — quem abriu a conta é quem sabe.
+        existing.teamName ??= input.teamName?.trim() || undefined;
+        this.touch(existing);
+        await this.em.flush();
+        // Este caminho era MUDO: a sala e a forma de pagamento mudavam no banco
+        // e nenhuma tela ficava sabendo até o próximo refetch. É o caso mais
+        // comum de todos — a pessoa já tem conta aberta e pede de novo pelo app.
+        this.emitUpdated(existing);
         return this.viewOf(existing);
       }
     }
@@ -122,6 +180,15 @@ export class OrderService {
       location: this.em.getReference(Location, locationId),
       channel: input.channel,
       tableId: input.tableId,
+      customerName: name || undefined,
+      teamName: input.teamName?.trim() || undefined,
+      deliveryRoom: input.deliveryRoom?.trim() || undefined,
+      paymentIntent: input.paymentIntent,
+      cashNeedsChange: input.paymentIntent === 'cash' ? input.cashNeedsChange : undefined,
+      cashChangeForCents:
+        input.paymentIntent === 'cash' && input.cashNeedsChange
+          ? input.cashChangeForCents
+          : undefined,
       status: 'open',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -317,6 +384,35 @@ export class OrderService {
       OrderEntity,
       { tableId, location: locationId, status: { $nin: ['paid', 'closed', 'cancelled'] } },
       { filters: this.accessFilters(), populate: ['items', 'payments'] },
+    );
+  }
+
+  /**
+   * Conta em aberto da pessoa — o alvo em que cada pedido dela cai.
+   *
+   * A comparação é case-insensitive e sem espaços nas pontas porque o nome é
+   * digitado à mão a cada pedido: "nicolle cerqueira " e "Nicolle Cerqueira"
+   * são a mesma pessoa, e tratá-las como contas diferentes derrotaria o
+   * propósito de acumular na mesma conta.
+   *
+   * Ordena pela MAIS ANTIGA: se por qualquer motivo houver duplicatas (contas
+   * criadas antes desta regra), os pedidos novos convergem todos para a mesma,
+   * em vez de saltar entre elas conforme a data muda.
+   */
+  private findOpenAccountByCustomer(customerName: string): Promise<OrderEntity | null> {
+    const { locationId } = this.scope();
+    return this.em.findOne(
+      OrderEntity,
+      {
+        location: locationId,
+        customerName: { $ilike: customerName },
+        status: { $nin: ['paid', 'closed', 'cancelled'] },
+      },
+      {
+        filters: this.accessFilters(),
+        populate: ['items', 'payments'],
+        orderBy: { createdAt: 'asc' },
+      },
     );
   }
 

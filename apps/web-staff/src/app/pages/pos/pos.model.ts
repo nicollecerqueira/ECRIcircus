@@ -1,4 +1,11 @@
-import { isActiveOrder, type Order, orderTotalCents } from '../order/order.model';
+import {
+  accountLabel,
+  isActiveOrder,
+  isOnAccount,
+  type Order,
+  orderTotalCents,
+  teamLabel,
+} from '../order/order.model';
 
 /**
  * A unidade de cobrança do caixa é a CONTA, não o pedido.
@@ -12,6 +19,11 @@ import { isActiveOrder, type Order, orderTotalCents } from '../order/order.model
 export interface Bill {
   key: string;
   label: string;
+  /** Equipe da pessoa — desempata homônimos na hora de cobrar. Sempre preenchido
+      (cai no rótulo de "não informada"), para a linha não sumir do cartão. */
+  teamName: string;
+  /** Conta deixada para acertar depois: o cliente escolheu "colocar na conta". */
+  onAccount: boolean;
   /** Pedidos que compõem esta conta, do mais antigo para o mais novo. */
   orders: Order[];
   totalCents: number;
@@ -47,11 +59,9 @@ export function buildBills(orders: Order[], tableNumberById?: Map<string, number
       const first = sorted[0];
       return {
         key,
-        label: first.tableId
-          ? tableLabel(first.tableId, tableNumberById)
-          : first.channel === 'delivery'
-            ? 'Delivery'
-            : 'Balcão',
+        label: first.tableId ? tableLabel(first.tableId, tableNumberById) : accountLabel(first),
+        teamName: teamLabel(first),
+        onAccount: sorted.some((o) => isOnAccount(o)),
         orders: sorted,
         totalCents: sorted.reduce((sum, o) => sum + orderTotalCents(o), 0),
         paidCents: sorted.reduce(

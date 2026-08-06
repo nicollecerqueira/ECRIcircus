@@ -46,7 +46,20 @@ export class RealtimeGateway implements OnGatewayConnection {
 
   handleConnection(client: Socket) {
     const token = (client.handshake.auth?.token as string | undefined) ?? '';
-    client.data.scope = this.resolveScope(token);
+    const scope = this.resolveScope(token);
+    client.data.scope = scope;
+
+    // Staff entra automaticamente na sala da UNIDADE. Sem ela, quem olha uma
+    // LISTA (salão, caixa) só recebia evento dos pedidos que ele mesmo abriu
+    // naquela aba — a conta que o cliente mexeu pelo app mudava no banco e a
+    // tela seguia mostrando o estado antigo até o refetch lento. Não há o que
+    // assinar: quem é staff acompanha a unidade inteira, é o trabalho dele.
+    //
+    // Diner fica de fora: ele só pode seguir a própria conta, e a sala da
+    // unidade carrega evento de toda a operação.
+    if (!scope.isDiner) {
+      client.join(this.ordersRoom(scope));
+    }
   }
 
   // Client asks to follow a KDS station or an order. Scope is enforced from the token.
@@ -74,31 +87,44 @@ export class RealtimeGateway implements OnGatewayConnection {
     return { ok: true };
   }
 
+  // Cada evento vai TAMBÉM para a sala da unidade: qualquer um deles muda o que
+  // o cartão da conta mostra no salão e no caixa (itens, total, status, sala,
+  // forma de pagamento). Quem assina a conta específica continua recebendo como
+  // antes — a sala da unidade é adicional, não substituta.
+
   @OnEvent(DomainEvent.ItemFired)
   onItemFired(p: ItemFiredPayload) {
     this.server.to(this.kdsRoom(p, p.stationId)).emit(DomainEvent.ItemFired, p);
+    this.server.to(this.kdsRoom(p, 'all')).emit(DomainEvent.ItemFired, p);
+    this.server.to(this.ordersRoom(p)).emit(DomainEvent.ItemFired, p);
   }
 
   @OnEvent(DomainEvent.ItemPreparing)
   onItemPreparing(p: ItemStatePayload) {
     this.server.to(this.orderRoom(p, p.orderId)).emit(DomainEvent.ItemPreparing, p);
     this.server.to(this.kdsRoom(p, p.stationId)).emit(DomainEvent.ItemPreparing, p);
+    this.server.to(this.kdsRoom(p, 'all')).emit(DomainEvent.ItemPreparing, p);
+    this.server.to(this.ordersRoom(p)).emit(DomainEvent.ItemPreparing, p);
   }
 
   @OnEvent(DomainEvent.ItemReady)
   onItemReady(p: ItemStatePayload) {
     this.server.to(this.orderRoom(p, p.orderId)).emit(DomainEvent.ItemReady, p);
     this.server.to(this.kdsRoom(p, p.stationId)).emit(DomainEvent.ItemReady, p);
+    this.server.to(this.kdsRoom(p, 'all')).emit(DomainEvent.ItemReady, p);
+    this.server.to(this.ordersRoom(p)).emit(DomainEvent.ItemReady, p);
   }
 
   @OnEvent(DomainEvent.OrderUpdated)
   onOrderUpdated(p: OrderUpdatedPayload) {
     this.server.to(this.orderRoom(p, p.orderId)).emit(DomainEvent.OrderUpdated, p);
+    this.server.to(this.ordersRoom(p)).emit(DomainEvent.OrderUpdated, p);
   }
 
   @OnEvent(DomainEvent.OrderPaid)
   onOrderPaid(p: OrderPaidPayload) {
     this.server.to(this.orderRoom(p, p.orderId)).emit(DomainEvent.OrderPaid, p);
+    this.server.to(this.ordersRoom(p)).emit(DomainEvent.OrderPaid, p);
   }
 
   private resolveScope(token: string): SocketScope {
@@ -131,5 +157,11 @@ export class RealtimeGateway implements OnGatewayConnection {
 
   private orderRoom(s: ScopedPayload | SocketScope, orderId: string) {
     return `tenant:${s.tenantId}:location:${s.locationId}:order:${orderId}`;
+  }
+
+  /** Sala da unidade: tudo que mexe em QUALQUER conta dela. É o que as telas de
+      lista (salão, caixa) precisam ouvir — elas mostram todas as contas, não uma. */
+  private ordersRoom(s: ScopedPayload | SocketScope) {
+    return `tenant:${s.tenantId}:location:${s.locationId}:orders`;
   }
 }

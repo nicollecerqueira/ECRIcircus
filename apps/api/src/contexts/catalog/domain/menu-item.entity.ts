@@ -29,6 +29,14 @@ export class MenuItem {
   @Property()
   priceCents!: number;
 
+  /** Combo vendido como um item único, com composição descrita no cardápio. */
+  @Property({ default: false })
+  isCombo = false;
+
+  /** Texto livre da composição do combo (ex.: "Hambúrguer + batata + refri"). */
+  @Property({ type: 'text', nullable: true })
+  comboItems?: string;
+
   @Property({ default: true })
   available = true;
 

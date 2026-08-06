@@ -9,10 +9,12 @@ import { type SessionUser, useAuthStore } from './auth.store';
  * Permissions are derived from the role (mirrors business-rules.md RBAC). Route
  * guard data uses these permission keys.
  */
-export type Permission = 'floor' | 'order' | 'pos' | 'admin';
+/** `users` (gerir contas de acesso) é a única permissão que o gerente NÃO tem:
+    quem cria acesso decide quem entra no caixa, e isso é decisão de dono. */
+export type Permission = 'floor' | 'order' | 'pos' | 'admin' | 'users';
 
 const ROLE_PERMISSIONS: Record<string, Permission[]> = {
-  brand_owner: ['floor', 'order', 'pos', 'admin'],
+  brand_owner: ['floor', 'order', 'pos', 'admin', 'users'],
   location_manager: ['floor', 'order', 'pos', 'admin'],
   waiter: ['floor', 'order'],
   cashier: ['floor', 'pos'],

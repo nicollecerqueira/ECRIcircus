@@ -73,6 +73,8 @@ export function ItemRow({ item }: { item: MenuItem }) {
 
   const [name, setName] = useState(item.name);
   const [price, setPrice] = useState(centsToPrice(item.priceCents));
+  const [isCombo, setIsCombo] = useState(item.isCombo);
+  const [comboItems, setComboItems] = useState(item.comboItems ?? '');
   const [promoPrice, setPromoPrice] = useState(
     item.promoPriceCents ? centsToPrice(item.promoPriceCents) : '',
   );
@@ -80,7 +82,7 @@ export function ItemRow({ item }: { item: MenuItem }) {
 
   const save = () => {
     update.mutate(
-      { itemId: item.id, name, priceCents: priceToCents(price) },
+      { itemId: item.id, name, priceCents: priceToCents(price), isCombo, comboItems },
       { onSuccess: () => setEditing(false) },
     );
   };
@@ -126,6 +128,17 @@ export function ItemRow({ item }: { item: MenuItem }) {
             Cancelar
           </Button>
         </div>
+        <label className="mt-2 flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={isCombo} onChange={(e) => setIsCombo(e.target.checked)} />
+          É combo
+        </label>
+        <textarea
+          rows={2}
+          value={comboItems}
+          placeholder="Itens do combo"
+          onChange={(e) => setComboItems(e.target.value)}
+          className="mt-2 w-full rounded-lg border border-border bg-surface px-2 py-1 text-sm"
+        />
         {update.isError && <p className="mt-1 text-xs text-danger">Não foi possível salvar.</p>}
       </li>
     );
@@ -146,6 +159,7 @@ export function ItemRow({ item }: { item: MenuItem }) {
           ) : (
             formatCents(item.priceCents)
           )}
+          {item.isCombo && <Badge tone="primary">combo</Badge>}
           {item.onPromo && <Badge tone="danger">promo</Badge>}
         </span>
         <div className="flex items-center gap-2">
@@ -184,6 +198,9 @@ export function ItemRow({ item }: { item: MenuItem }) {
           </div>
         </div>
       </div>
+      {item.isCombo && item.comboItems && (
+        <p className="mt-1 text-sm text-muted">{item.comboItems}</p>
+      )}
 
       {promoOpen && (
         <div className="mt-2 rounded-lg border border-accent/40 bg-surface-2 p-3">

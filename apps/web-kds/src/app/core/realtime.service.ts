@@ -3,12 +3,13 @@ import { io, type Socket } from 'socket.io-client';
 import { useAuthStore } from './auth.store';
 
 /**
- * KDS real-time. Station events invalidate the station board query (['kds', id]);
+ * KDS real-time. Kitchen events invalidate the single board query.
  * the board refetches via REST. Sockets never carry the source of truth.
  */
 class RealtimeService {
   private socket: Socket | null = null;
   private stations = new Set<string>();
+  private kitchenSubscribed = false;
 
   constructor(private readonly qc: QueryClient) {}
 
@@ -23,10 +24,14 @@ class RealtimeService {
       for (const id of this.stations) {
         this.socket?.emit('subscribe', { type: 'kds', id });
       }
+      if (this.kitchenSubscribed) {
+        this.socket?.emit('subscribe', { type: 'kds', id: 'all' });
+      }
       this.qc.invalidateQueries({ queryKey: ['kds'] });
     });
 
     const bump = (p: { stationId?: string }) => {
+      this.qc.invalidateQueries({ queryKey: ['kds', 'board'] });
       if (p.stationId) {
         this.qc.invalidateQueries({ queryKey: ['kds', p.stationId] });
       } else {
@@ -48,10 +53,21 @@ class RealtimeService {
     this.socket?.emit('unsubscribe', { type: 'kds', id });
   }
 
+  subscribeKitchen() {
+    this.kitchenSubscribed = true;
+    this.socket?.emit('subscribe', { type: 'kds', id: 'all' });
+  }
+
+  unsubscribeKitchen() {
+    this.kitchenSubscribed = false;
+    this.socket?.emit('unsubscribe', { type: 'kds', id: 'all' });
+  }
+
   disconnect() {
     this.socket?.disconnect();
     this.socket = null;
     this.stations.clear();
+    this.kitchenSubscribed = false;
   }
 
   get connected(): boolean {

@@ -21,7 +21,16 @@ export type ItemState = 'queued' | 'preparing' | 'ready' | 'served' | 'voided';
  */
 export type OrderChannel = 'waiter' | 'qr' | 'pos' | 'delivery' | 'counter';
 
-export type PaymentMethod = 'cash' | 'card' | 'pix' | 'voucher' | 'other';
+export type PaymentMethod = 'cash' | 'card' | 'pix';
+
+/**
+ * Forma de pagamento DECLARADA pelo cliente no app — intenção, não pagamento.
+ * Quem registra o pagamento de fato é o caixa (`Payment`).
+ *
+ * `account` ("colocar na conta") é a única que não se resolve no balcão na hora:
+ * o pedido fica em aberto na conta da pessoa até o acerto.
+ */
+export type PaymentIntent = 'pix' | 'cash' | 'card' | 'account';
 
 export interface OrderItem {
   id: string;
@@ -49,6 +58,18 @@ export interface Order {
   locationId: string;
   channel: OrderChannel;
   tableId?: string;
+  /** Nome de quem fez o pedido — identifica a conta quando não há mesa. */
+  customerName?: string;
+  /** Equipe a que a pessoa pertence. */
+  teamName?: string;
+  /** Sala onde a pessoa está — é para onde o pedido é levado. */
+  deliveryRoom?: string;
+  /** Como o cliente declarou que vai pagar (ver `PaymentIntent`). */
+  paymentIntent?: PaymentIntent;
+  /** Em dinheiro, informa se o cliente pediu troco. */
+  cashNeedsChange?: boolean;
+  /** Valor para o qual o cliente precisa de troco, em centavos. */
+  cashChangeForCents?: number;
   status: OrderStatus;
   items: OrderItem[];
   payments: Payment[];

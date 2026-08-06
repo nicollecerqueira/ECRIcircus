@@ -9,13 +9,8 @@ import { AppComponent } from './app.component';
 import { isAuthenticated } from './core/auth.service';
 import { protected_ } from './guards/permission.guard';
 import { MenuAdminComponent } from './pages/admin/menu.component';
-import {
-  SalesAdminComponent,
-  StaffAdminComponent,
-  TablesAdminComponent,
-} from './pages/admin/placeholders.component';
+import { UsersAdminComponent } from './pages/admin/users.component';
 import { FloorComponent } from './pages/floor/floor.component';
-import { TableDetailComponent } from './pages/floor/table-detail.component';
 import { LoginComponent } from './pages/login/login.component';
 import { OrderComponent } from './pages/order/order.component';
 import { CheckoutComponent } from './pages/pos/checkout.component';
@@ -53,13 +48,11 @@ const floorRoute = createRoute({
   path: '/floor',
   component: FloorComponent,
   beforeLoad: protected_(['floor']),
-});
-
-const tableDetailRoute = createRoute({
-  getParentRoute: () => shellRoute,
-  path: '/floor/table/$id',
-  component: TableDetailComponent,
-  beforeLoad: protected_(['floor']),
+  // Equipe escolhida no salão. Fica na URL para que voltar do detalhe do pedido
+  // caia na lista da mesma equipe, em vez de recomeçar a busca do zero.
+  validateSearch: (search: Record<string, unknown>): { team?: string } => ({
+    team: typeof search.team === 'string' && search.team.length > 0 ? search.team : undefined,
+  }),
 });
 
 const orderRoute = createRoute({
@@ -67,6 +60,12 @@ const orderRoute = createRoute({
   path: '/order/$id',
   component: OrderComponent,
   beforeLoad: protected_(['order']),
+  // De que equipe se veio (ou para qual a conta foi aberta). Serve só para o
+  // "Voltar ao salão" devolver a lista daquela equipe em vez de recomeçar na
+  // escolha — o garçom que abriu conta da BANDINHA vai abrir outra da BANDINHA.
+  validateSearch: (search: Record<string, unknown>): { team?: string } => ({
+    team: typeof search.team === 'string' && search.team.length > 0 ? search.team : undefined,
+  }),
 });
 
 const posRoute = createRoute({
@@ -83,6 +82,8 @@ const checkoutRoute = createRoute({
   beforeLoad: protected_(['pos']),
 });
 
+// Mesas & QR, Equipe e Vendas foram removidos: sem mesa não há QR para gerir, e
+// os outros dois eram telas de rascunho que não entram nesta operação.
 const adminRoles = { roles: ['location_manager', 'brand_owner'] };
 const menuAdminRoute = createRoute({
   getParentRoute: () => shellRoute,
@@ -90,23 +91,15 @@ const menuAdminRoute = createRoute({
   component: MenuAdminComponent,
   beforeLoad: protected_(['admin'], adminRoles),
 });
-const tablesAdminRoute = createRoute({
+
+// Contas de acesso: só o dono. A permissão `users` já é exclusiva dele, e o
+// papel vai junto para a regra não depender de um único ponto — a API exige
+// `brand_owner` de qualquer forma, então URL digitada à mão não passa.
+const usersAdminRoute = createRoute({
   getParentRoute: () => shellRoute,
-  path: '/admin/tables',
-  component: TablesAdminComponent,
-  beforeLoad: protected_(['admin'], adminRoles),
-});
-const staffAdminRoute = createRoute({
-  getParentRoute: () => shellRoute,
-  path: '/admin/staff',
-  component: StaffAdminComponent,
-  beforeLoad: protected_(['admin'], adminRoles),
-});
-const salesAdminRoute = createRoute({
-  getParentRoute: () => shellRoute,
-  path: '/admin/sales',
-  component: SalesAdminComponent,
-  beforeLoad: protected_(['admin'], adminRoles),
+  path: '/admin/usuarios',
+  component: UsersAdminComponent,
+  beforeLoad: protected_(['users'], { roles: ['brand_owner'] }),
 });
 
 // Catch-all → login.
@@ -123,14 +116,11 @@ const routeTree = rootRoute.addChildren([
   loginRoute,
   shellRoute.addChildren([
     floorRoute,
-    tableDetailRoute,
     orderRoute,
     posRoute,
     checkoutRoute,
     menuAdminRoute,
-    tablesAdminRoute,
-    staffAdminRoute,
-    salesAdminRoute,
+    usersAdminRoute,
   ]),
   catchAllRoute,
 ]);

@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -vi \"o prato\\\\|do prato\\\\|banco \\\\`prato\\\\`\\\\|portas do Prato\")",
+      "Bash(curl -s -o /dev/null -w \"web-order %{http_code}\\\\n\" http://localhost:5175/cart)",
+      "Bash(curl -s http://localhost:5175/)",
+      "Bash(curl -s http://localhost:5175/assets/index-MNRyV3b9.js)",
+      "Bash(grep -o \"Tirar .\\\\{0,30\\\\}\")",
+      "Bash(npx --yes @biomejs/biome@2 check src/contexts/tenancy/)",
+      "Bash(curl -s http://localhost:5173/)",
+      "Bash(curl -s http://localhost:5173/assets/index-B4yYNGSr.js)",
+      "Bash(grep -rn \"accountLabel\\\\|Conta \\\\|'Conta'\\\\|\\\\`Conta\" --include=\"*.ts\" --include=\"*.tsx\" apps/web-staff/src apps/web-kds/src apps/web-order/src apps/api/src)",
+      "Bash(python -m json.tool)",
+      "Bash(python -c ' *)",
+      "Bash(npx --yes @biomejs/biome@2 check src/realtime/ src/contexts/order/)"
+    ]
+  }
+}

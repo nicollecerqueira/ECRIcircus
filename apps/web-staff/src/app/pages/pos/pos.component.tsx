@@ -3,14 +3,16 @@ import { Art } from '../../shared/components/art';
 import { Badge, Button, Card, Spinner } from '../../shared/components/ui';
 import { formatCents } from '../../shared/utils/money';
 import { useTables } from '../floor/floor.service';
-import { useCreateOrder, useOrders } from '../order/order.service';
+import { ORDER_STATUS_LABEL } from '../order/order.model';
+import { useOrders } from '../order/order.service';
 import { billsGrandTotalCents, buildBills } from './pos.model';
+import { useDownloadSalesReport } from './pos.service';
 
 export function PosComponent() {
   const { data: orders, isPending } = useOrders();
   const { data: tables } = useTables();
-  const createOrder = useCreateOrder();
   const navigate = useNavigate();
+  const report = useDownloadSalesReport();
 
   if (isPending) {
     return <Spinner />;
@@ -34,16 +36,17 @@ export function PosComponent() {
             <span className="font-semibold text-fg">{formatCents(grandTotal)}</span>
           </p>
         </div>
-        <Button
-          onClick={() =>
-            createOrder.mutate(
-              { channel: 'pos' },
-              { onSuccess: (o) => navigate({ to: '/order/$id', params: { id: o.id } }) },
-            )
-          }
-        >
-          Novo balcão
-        </Button>
+        {/* Não há "novo balcão" aqui: ele abria conta SEM nome, e a conta é da
+            pessoa. Conta nova nasce no salão, onde nome e equipe são pedidos. */}
+        <div className="text-right">
+          <Button variant="ghost" onClick={() => report.mutate()} disabled={report.isPending}>
+            {report.isPending ? 'Gerando…' : '⬇ Baixar relatório de vendas'}
+          </Button>
+          <p className="mt-1 text-xs text-muted">Planilha (.csv) — abre no Excel</p>
+          {report.isError && (
+            <p className="mt-1 text-xs text-danger">Não foi possível gerar o relatório.</p>
+          )}
+        </div>
       </div>
 
       {bills.length === 0 ? (
@@ -72,11 +75,19 @@ export function PosComponent() {
                 }
               >
                 <Card className="transition hover:border-primary">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold">{bill.label}</span>
-                    <Badge tone={bill.paidCents > 0 ? 'accent' : 'primary'}>
-                      {bill.orders[0].status}
-                    </Badge>
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="font-semibold">{bill.label}</span>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-accent">
+                        {bill.teamName}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 flex-col items-end gap-1">
+                      <Badge tone={bill.paidCents > 0 ? 'accent' : 'primary'}>
+                        {ORDER_STATUS_LABEL[bill.orders[0].status] ?? bill.orders[0].status}
+                      </Badge>
+                      {bill.onAccount && <Badge tone="danger">na conta</Badge>}
+                    </div>
                   </div>
                   <p className="mt-2 text-lg font-bold">{formatCents(bill.totalCents)}</p>
                   <p className="text-xs text-muted">

@@ -5,6 +5,7 @@ import { useSession } from '../../core/session.store';
 import { Art } from '../../shared/components/art';
 import { Badge, Button, Card, Kicker, Spinner, StarDivider } from '../../shared/components/ui';
 import { buildOrderReport, whatsappLink } from '../../shared/utils/whatsapp';
+import type { DinerOrder } from '../order/order.model';
 import { STATE_LABEL } from '../order/order.model';
 import { useDinerOrder } from '../order/order.service';
 
@@ -25,17 +26,28 @@ const STATE_TONE: Record<string, string> = {
  * link quebrado.
  */
 function WhatsappReport({
-  orderId,
+  order,
   lines,
 }: {
-  orderId: string;
+  order: DinerOrder;
   lines: { name: string; qty: number; priceCents: number }[];
 }) {
   const customerName = useSession((s) => s.customerName);
+  const teamName = useSession((s) => s.teamName);
+  const deliveryRoom = useSession((s) => s.deliveryRoom);
   const paymentChoice = useSession((s) => s.paymentChoice);
   const [copied, setCopied] = useState(false);
 
-  const report = buildOrderReport({ orderId, customerName, paymentChoice, lines });
+  const report = buildOrderReport({
+    orderId: order.id,
+    customerName: order.customerName ?? customerName,
+    teamName: order.teamName ?? teamName,
+    deliveryRoom: order.deliveryRoom ?? deliveryRoom,
+    paymentChoice: order.paymentIntent ?? paymentChoice,
+    cashNeedsChange: order.cashNeedsChange,
+    cashChangeForCents: order.cashChangeForCents,
+    lines,
+  });
   const link = whatsappLink(report);
 
   if (link) {
@@ -118,7 +130,7 @@ export function OrderTrackComponent() {
       </Card>
 
       <WhatsappReport
-        orderId={order.id}
+        order={order}
         lines={active.map((i) => ({ name: i.name, qty: i.qty, priceCents: i.unitPriceCents }))}
       />
 

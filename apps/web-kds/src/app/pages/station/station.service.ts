@@ -12,11 +12,11 @@ export function useStations() {
   });
 }
 
-export function useBoard(stationId: string) {
+export function useBoard() {
   return useQuery({
-    queryKey: ['kds', stationId],
+    queryKey: ['kds', 'board'],
     queryFn: async () => {
-      const { data } = await apiClient.get<Board>(`/kds/stations/${stationId}/board`);
+      const { data } = await apiClient.get<Board>('/kds/board');
       return boardSchema.parse(data);
     },
     // Socket events drive updates; this is a slow safety-net refetch.
@@ -24,13 +24,13 @@ export function useBoard(stationId: string) {
   });
 }
 
-export function useAdvanceItem(stationId: string) {
+export function useAdvanceItem() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ itemId, state }: { itemId: string; state: 'preparing' | 'ready' }) => {
       const { data } = await apiClient.patch(`/kds/items/${itemId}/state`, { state });
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['kds', stationId] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['kds', 'board'] }),
   });
 }

@@ -1,31 +1,36 @@
 # Hybrid local dev: infra in Docker, apps run native with hot reload.
 # Weird ports to avoid collisions (Avenir convention).
+#
+# Banco PRÓPRIO do ECRI: nome, usuário, volume, container e portas são `ecri`.
+# Antes tudo se chamava `prato` e ocupava as portas do Prato (55432/56379), então
+# os dois projetos disputavam a mesma porta da máquina — subir um derrubava o
+# outro, e era fácil apontar esta API para o banco do Prato sem perceber.
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: prato-postgres
+    container_name: ecri-postgres
     environment:
-      POSTGRES_USER: prato
-      POSTGRES_PASSWORD: prato
-      POSTGRES_DB: prato
+      POSTGRES_USER: ecri
+      POSTGRES_PASSWORD: ecri
+      POSTGRES_DB: ecri
     ports:
-      - "55432:5432"
+      - "55433:5432"
     volumes:
-      - prato-pgdata:/var/lib/postgresql/data
+      - ecri-pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U prato -d prato"]
+      test: ["CMD-SHELL", "pg_isready -U ecri -d ecri"]
       interval: 5s
       timeout: 5s
       retries: 10
 
   redis:
     image: redis:7-alpine
-    container_name: prato-redis
+    container_name: ecri-redis
     command: ["redis-server", "--appendonly", "yes"]
     ports:
-      - "56379:6379"
+      - "56380:6379"
     volumes:
-      - prato-redisdata:/data
+      - ecri-redisdata:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -33,5 +38,5 @@ services:
       retries: 10
 
 volumes:
-  prato-pgdata:
-  prato-redisdata:
+  ecri-pgdata:
+  ecri-redisdata:

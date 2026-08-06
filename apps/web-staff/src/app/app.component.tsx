@@ -12,12 +12,11 @@ interface NavItem {
 }
 
 const NAV: NavItem[] = [
-  { to: '/floor', label: 'Salão', permission: 'floor' },
+  { to: '/floor', label: 'Contas abertas', permission: 'floor' },
   { to: '/pos', label: 'Caixa', permission: 'pos' },
   { to: '/admin/menu', label: 'Cardápio', permission: 'admin' },
-  { to: '/admin/tables', label: 'Mesas & QR', permission: 'admin' },
-  { to: '/admin/staff', label: 'Equipe', permission: 'admin' },
-  { to: '/admin/sales', label: 'Vendas', permission: 'admin' },
+  // Só o dono tem a permissão `users`, então o link nem aparece para os demais.
+  { to: '/admin/usuarios', label: 'Contas de acesso', permission: 'users' },
 ];
 
 /** App shell — perm-gated sidebar + <Outlet/>. Login renders a bare outlet (root). */
@@ -64,7 +63,7 @@ export function AppComponent() {
           <button
             type="button"
             onClick={signOut}
-            className="mt-4 rounded-lg px-3 py-2 text-left text-sm text-muted transition hover:bg-surface-2 hover:text-fg"
+            className="mt-4 w-full rounded-lg px-3 py-2 text-center text-sm text-muted transition hover:bg-surface-2 hover:text-fg"
           >
             Sair
           </button>

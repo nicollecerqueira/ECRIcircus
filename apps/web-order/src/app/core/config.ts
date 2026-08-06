@@ -14,10 +14,20 @@ export const LOCATION_ID =
   import.meta.env.VITE_LOCATION_ID || '22222222-2222-2222-2222-222222222222';
 
 /**
- * WhatsApp que recebe o relatório do pedido, só dígitos com DDI+DDD
- * (ex.: 5511987654321).
+ * WhatsApp que recebe o relatório do pedido: DDI + DDD + número, só dígitos.
  *
- * Vazio por padrão — enquanto o número não for definido, a tela mostra o
- * relatório para copiar em vez de um link `wa.me` quebrado.
+ * O padrão é o número do ECRI Circus — (83) 99311-3527. Fica aqui, e não só no
+ * `.env`, porque a imagem do app é construída sem passar variável de build:
+ * deixado a cargo do ambiente, o número chegaria vazio na produção e o cliente
+ * cairia no modo "copie o texto e envie você mesmo".
+ *
+ * `VITE_WHATSAPP_NUMERO` continua tendo precedência para trocar o destino sem
+ * mexer no código. Vazio de propósito também funciona: a tela volta ao modo de
+ * copiar, em vez de abrir um `wa.me` sem destino.
  */
-export const WHATSAPP_NUMBER = (import.meta.env.VITE_WHATSAPP_NUMERO || '').replace(/\D/g, '');
+const ECRI_WHATSAPP = '5583993113527';
+
+export const WHATSAPP_NUMBER = (import.meta.env.VITE_WHATSAPP_NUMERO ?? ECRI_WHATSAPP).replace(
+  /\D/g,
+  '',
+);

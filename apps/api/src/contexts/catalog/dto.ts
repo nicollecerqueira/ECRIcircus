@@ -24,6 +24,14 @@ export class CreateMenuItemDto {
 
   @IsString()
   stationId!: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isCombo?: boolean;
+
+  @IsOptional()
+  @IsString()
+  comboItems?: string;
 }
 
 export class UpdateMenuItemDto {
@@ -44,6 +52,14 @@ export class UpdateMenuItemDto {
   @IsOptional()
   @IsString()
   stationId?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isCombo?: boolean;
+
+  @IsOptional()
+  @IsString()
+  comboItems?: string;
 
   /**
    * Promoção. `null` limpa — por isso ValidateIf em vez de IsOptional puro:

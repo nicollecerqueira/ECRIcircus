@@ -11,7 +11,7 @@ import {
 import { TENANT_FILTER, tenantFilterCond } from '../../../common/tenant/tenant.filter';
 import { Brand } from '../../tenancy/domain/brand.entity';
 import { Location } from '../../tenancy/domain/location.entity';
-import type { OrderChannel, OrderStatus } from '../order.model';
+import type { OrderChannel, OrderStatus, PaymentIntent } from '../order.model';
 import { OrderItem } from './order-item.entity';
 import { Payment } from './payment.entity';
 
@@ -38,6 +38,33 @@ export class Order {
   /** Mesa (quando canal waiter/qr). String por enquanto — FK pra sessão fica pra depois. */
   @Property({ length: 40, nullable: true })
   tableId?: string;
+
+  /**
+   * Nome de quem fez o pedido. É o que identifica a conta quando não há mesa:
+   * o cliente digita no app e o salão vê "Conta da Ana" em vez de um id.
+   */
+  @Property({ length: 80, nullable: true })
+  customerName?: string;
+
+  /** Equipe a que a pessoa pertence (ARCO-ÍRIS, BANDINHA, …). */
+  @Property({ length: 60, nullable: true })
+  teamName?: string;
+
+  /** Sala da equipe onde a pessoa está — o destino da entrega. */
+  @Property({ length: 60, nullable: true })
+  deliveryRoom?: string;
+
+  /** Forma de pagamento declarada pelo cliente no app (intenção, não pagamento). */
+  @Property({ length: 12, nullable: true })
+  paymentIntent?: PaymentIntent;
+
+  /** Em dinheiro, informa se o cliente pediu troco. */
+  @Property({ nullable: true })
+  cashNeedsChange?: boolean;
+
+  /** Valor para o qual o cliente precisa de troco, em centavos. */
+  @Property({ nullable: true })
+  cashChangeForCents?: number;
 
   @Property({ length: 24 })
   status: OrderStatus = 'open';

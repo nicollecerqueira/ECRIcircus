@@ -10,7 +10,7 @@ ordering channel, with a real-time Kitchen Display System (KDS) as the spine.
 
 ## Monorepo layout ("polyrepo-in-folder" — no workspace, apps are independent)
 ```
-prato/
+ECRIcircus/
 ├── apps/
 │   ├── api/          NestJS 11 + WS gateway (stub data in the skeleton)
 │   ├── web-staff/    React 19 — waiter + POS + admin (PWA)
@@ -20,7 +20,7 @@ prato/
 ├── tools/            dev orchestrator + CI helpers
 ├── deploy/           reverse-proxy + cloud manifests
 ├── docs/             tenancy · rls · event-contracts
-├── docker-compose.dev.yml   postgres + redis (weird ports)
+├── docker-compose.dev.yml   postgres + redis do ECRI (`ecri`, portas 55433/56380)
 └── docker-compose.ci.yml    full stack for E2E
 ```
 Each React app follows the **Avenir Angular project convention**
@@ -51,9 +51,15 @@ docker compose -f docker-compose.dev.yml up -d
 Or orchestrate everything: `pnpm install && pnpm dev` at the root (runs `tools/dev.mjs`).
 Use B for development; A for a quick demo or to hand the stack to someone else.
 
+> **Banco:** o ECRI tem o seu — banco/usuário `ecri` em `localhost:55433`, Redis em
+> `56380`, volumes `ecri-pgdata`/`ecri-redisdata`. Não é o banco `prato` da porta
+> 55432: as portas foram separadas justamente para os dois projetos poderem rodar
+> ao mesmo tempo sem um sobrescrever o outro. Banco vazio é semeado no boot com a
+> marca **ECRI Circus** e as contas `@ecricircus.app` (senha `ecri123`).
+
 ## Try the full loop (demo)
-1. **Staff** (`:5173`) → login `waiter@demo.prato.app` / `prato123` → open a table → add items.
-2. **KDS** (`:5174`) → login `kitchen@demo.prato.app` → items appear live → tap to `preparing`/`ready`.
+1. **Staff** (`:5173`) → login `waiter@ecricircus.app` / `ecri123` → open a table → add items.
+2. **KDS** (`:5174`) → login `kitchen@ecricircus.app` → items appear live → tap to `preparing`/`ready`.
 3. **Diner** (`:5175/t/q_22222222-2222-2222-2222-222222222222_1`) → scan flow → order →
    `/track` updates in real time. O token do QR é `q_<locationId>_<mesa>`; veja os
    reais em **Admin → Mesas** no app do garçom.

@@ -5,11 +5,18 @@ import { Brand } from '../tenancy/domain/brand.entity';
 import { TENANT_B_ID } from '../tenancy/tenancy.seed';
 import { Station } from './domain/station.entity';
 
-/** Códigos ESTÁVEIS — os mesmos que cardápio, pedidos e salas do KDS já usam. */
+/**
+ * Códigos ESTÁVEIS — os mesmos que cardápio, pedidos e telas do KDS já usam.
+ *
+ * São os pontos de preparo da cantina do ECRI. Trocar um código aqui exige
+ * trocar junto a lista do admin (web-staff `admin.model.ts`) e os itens já
+ * gravados, que guardam o código como texto — por isso não se renomeia por
+ * estética: o nome exibido é o `name`.
+ */
 const STATIONS = [
-  { code: 'st-grill', name: 'Grelha', kind: 'grill', sortOrder: 1 },
-  { code: 'st-bar', name: 'Bar', kind: 'bar', sortOrder: 2 },
-  { code: 'st-dessert', name: 'Sobremesas', kind: 'dessert', sortOrder: 3 },
+  { code: 'st-lanches', name: 'Lanches', kind: 'grill', sortOrder: 1 },
+  { code: 'st-bebidas', name: 'Bebidas', kind: 'bar', sortOrder: 2 },
+  { code: 'st-doces', name: 'Doces', kind: 'dessert', sortOrder: 3 },
 ];
 
 /** Semeia as 3 estações para cada marca (idempotente). */

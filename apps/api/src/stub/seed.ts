@@ -1,6 +1,6 @@
 /**
- * IDs de demonstração fixos da marca/unidade seed, partilhados pelos seeds de
- * cada contexto e pelo fallback de escopo do realtime.
+ * IDs fixos da marca/unidade semeadas (ECRI Circus · Cantina do Circo),
+ * partilhados pelos seeds de cada contexto e pelo fallback de escopo do realtime.
  *
  * O restante do "stub" (usuários, cardápio, mesas, estações) já virou tabela real
  * nas Fases 1–5 — sobraram só estes dois identificadores.

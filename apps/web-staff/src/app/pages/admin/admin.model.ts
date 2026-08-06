@@ -16,6 +16,8 @@ export const menuItemFormSchema = z.object({
     .refine((v) => !Number.isNaN(Number(v.replace(',', '.'))), 'Preço inválido'),
   categoryId: z.string().min(1, 'Escolha uma categoria'),
   stationId: z.string().min(1, 'Escolha a estação'),
+  isCombo: z.boolean(),
+  comboItems: z.string().optional(),
 });
 export type MenuItemForm = z.infer<typeof menuItemFormSchema>;
 
@@ -33,7 +35,7 @@ export function centsToPrice(cents: number): string {
  * fase posterior. Quando ganhar, isto vira um fetch de /kds/stations.
  */
 export const STATIONS = [
-  { id: 'st-grill', name: 'Grelha' },
-  { id: 'st-bar', name: 'Bar' },
-  { id: 'st-dessert', name: 'Sobremesas' },
+  { id: 'st-lanches', name: 'Lanches' },
+  { id: 'st-bebidas', name: 'Bebidas' },
+  { id: 'st-doces', name: 'Doces' },
 ];

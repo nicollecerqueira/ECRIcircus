@@ -14,6 +14,8 @@ export interface MenuItemView {
   priceCents: number;
   /** Preço que o cliente paga agora (o "por"). */
   effectivePriceCents: number;
+  isCombo: boolean;
+  comboItems?: string;
   promoPriceCents: number | null;
   promoStartsAt: string | null;
   promoEndsAt: string | null;
@@ -29,6 +31,8 @@ export function toItemView(i: MenuItem): MenuItemView {
     name: i.name,
     priceCents: i.priceCents,
     effectivePriceCents: effectivePriceCents(i),
+    isCombo: i.isCombo,
+    comboItems: i.comboItems ?? undefined,
     promoPriceCents: i.promoPriceCents ?? null,
     promoStartsAt: i.promoStartsAt?.toISOString() ?? null,
     promoEndsAt: i.promoEndsAt?.toISOString() ?? null,
@@ -135,6 +139,8 @@ export class CatalogService {
     priceCents: number;
     categoryId: string;
     stationId: string;
+    isCombo?: boolean;
+    comboItems?: string;
   }): Promise<MenuItemView> {
     const category = await this.em.findOne(Category, { id: input.categoryId });
     if (!category) {
@@ -147,6 +153,8 @@ export class CatalogService {
       category,
       name: input.name,
       priceCents: input.priceCents,
+      isCombo: input.isCombo ?? false,
+      comboItems: input.comboItems?.trim() || undefined,
       stationId: input.stationId,
       available: true,
       createdAt: new Date(),
@@ -162,6 +170,8 @@ export class CatalogService {
       priceCents?: number;
       available?: boolean;
       stationId?: string;
+      isCombo?: boolean;
+      comboItems?: string;
       /** `null` limpa a promoção. */
       promoPriceCents?: number | null;
       promoStartsAt?: string | null;
@@ -187,6 +197,12 @@ export class CatalogService {
     }
     if (patch.stationId !== undefined) {
       item.stationId = patch.stationId;
+    }
+    if (patch.isCombo !== undefined) {
+      item.isCombo = patch.isCombo;
+    }
+    if (patch.comboItems !== undefined) {
+      item.comboItems = patch.comboItems.trim() || undefined;
     }
     if (patch.promoPriceCents !== undefined) {
       item.promoPriceCents = patch.promoPriceCents ?? undefined;

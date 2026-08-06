@@ -1,16 +1,26 @@
-import { useNavigate, useParams } from '@tanstack/react-router';
+import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { realtime } from '../../core/realtime.service';
 import { Art } from '../../shared/components/art';
 import { Badge, Button, Card, Spinner } from '../../shared/components/ui';
 import { formatCents } from '../../shared/utils/money';
 import { useTables } from '../floor/floor.service';
-import { ITEM_STATE_LABEL, ITEM_STATE_TONE, orderTotalCents } from './order.model';
+import {
+  accountLabel,
+  ITEM_STATE_LABEL,
+  ITEM_STATE_TONE,
+  ORDER_STATUS_LABEL,
+  orderTotalCents,
+  PAYMENT_INTENT_LABEL,
+  teamLabel,
+} from './order.model';
 import { useAddItem, useMenu, useOrder, useVoidItem } from './order.service';
 
 export function OrderComponent() {
   const { id } = useParams({ from: '/shell/order/$id' });
   const navigate = useNavigate();
+  /** Equipe de onde se veio — devolvida ao salão no "Voltar". */
+  const { team } = useSearch({ strict: false }) as { team?: string };
   const { data: order, isPending } = useOrder(id);
   const { data: menu } = useMenu();
   const { data: tables } = useTables();
@@ -31,13 +41,28 @@ export function OrderComponent() {
     <div className="grid gap-4 p-4 sm:p-6 lg:grid-cols-[1fr_360px]">
       <section>
         <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold">
-            Pedido
-            {order.tableId
-              ? ` · Mesa ${tables?.find((t) => t.id === order.tableId)?.number ?? ''}`
-              : ''}
-          </h1>
-          <Badge tone="primary">{order.status}</Badge>
+          <div>
+            <h1 className="text-xl font-bold">
+              {order.tableId
+                ? `Pedido · Mesa ${tables?.find((t) => t.id === order.tableId)?.number ?? ''}`
+                : accountLabel(order)}
+            </h1>
+            <p className="text-xs font-semibold uppercase tracking-wide text-accent">
+              {teamLabel(order)}
+              {order.paymentIntent && ` · Pagamento: ${PAYMENT_INTENT_LABEL[order.paymentIntent]}`}
+            </p>
+            {order.paymentIntent === 'cash' && (
+              <p className="text-xs font-semibold text-accent">
+                {order.cashNeedsChange
+                  ? `Troco para ${formatCents(order.cashChangeForCents ?? 0)}`
+                  : 'Sem troco'}
+              </p>
+            )}
+            {/* A sala não aparece nas telas do balcão (aqui nem no salão): quem
+                atende tem a pessoa na frente. Ela segue na comanda do KDS, que
+                é de quem leva o pedido até a sala. */}
+          </div>
+          <Badge tone="primary">{ORDER_STATUS_LABEL[order.status] ?? order.status}</Badge>
         </div>
 
         <Card>
@@ -89,7 +114,7 @@ export function OrderComponent() {
           >
             Fechar conta
           </Button>
-          <Button variant="ghost" onClick={() => navigate({ to: '/floor' })}>
+          <Button variant="ghost" onClick={() => navigate({ to: '/floor', search: { team } })}>
             Voltar ao salão
           </Button>
         </div>

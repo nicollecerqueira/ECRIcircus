@@ -21,19 +21,21 @@ export class KitchenService {
     return stations.map((s) => ({ id: s.code, name: s.name, kind: s.kind }));
   }
 
-  /** Board for one station: items still to cook, oldest first (for color aging). */
-  async board(stationId: string) {
+  /** Board único da cozinha: pedidos com itens ainda a preparar, oldest first. */
+  async board() {
     const orders = await this.orders.list();
     const tickets = orders
       .flatMap((order) =>
         order.items
-          .filter(
-            (i) => i.stationId === stationId && (i.state === 'queued' || i.state === 'preparing'),
-          )
+          .filter((i) => i.state === 'queued' || i.state === 'preparing')
           .map((i) => ({
             orderId: order.id,
             tableId: order.tableId,
             channel: order.channel,
+            // Quem entrega lê a comanda: sem nome e sala, o prato fica pronto
+            // sem ninguém saber para onde levá-lo.
+            customerName: order.customerName,
+            deliveryRoom: order.deliveryRoom,
             itemId: i.id,
             name: i.name,
             qty: i.qty,
@@ -51,7 +53,26 @@ export class KitchenService {
       ...t,
       tableLabel: t.tableId ? `Mesa ${numbers.get(t.tableId) ?? '?'}` : undefined,
     }));
-    return { stationId, tickets: withLabel };
+    const byOrder = new Map<string, (typeof withLabel)[number][]>();
+    for (const ticket of withLabel) {
+      byOrder.set(ticket.orderId, [...(byOrder.get(ticket.orderId) ?? []), ticket]);
+    }
+
+    return {
+      orders: [...byOrder.entries()].map(([orderId, orderTickets]) => {
+        const first = orderTickets[0];
+        return {
+          orderId,
+          tableId: first.tableId,
+          tableLabel: first.tableLabel,
+          customerName: first.customerName,
+          deliveryRoom: first.deliveryRoom,
+          channel: first.channel,
+          firedAt: first.firedAt,
+          tickets: orderTickets,
+        };
+      }),
+    };
   }
 
   advance(itemId: string, next: 'preparing' | 'ready') {

@@ -20,9 +20,15 @@ export class KitchenController {
   }
 
   @Roles(Role.Kitchen, Role.LocationManager)
+  @Get('board')
+  board() {
+    return this.kitchen.board();
+  }
+
+  @Roles(Role.Kitchen, Role.LocationManager)
   @Get('stations/:stationId/board')
-  board(@Param('stationId') stationId: string) {
-    return this.kitchen.board(stationId);
+  stationBoard() {
+    return this.kitchen.board();
   }
 
   @Roles(Role.Kitchen, Role.LocationManager)
