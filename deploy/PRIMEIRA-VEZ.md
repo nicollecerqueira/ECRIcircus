@@ -175,9 +175,9 @@ Precisa aparecer `ECRI Circus API on http://localhost:3000/api/v1`.
 Antes de mexer em firewall, confirme que a stack responde localmente:
 
 ```bash
-curl -o /dev/null -w "cliente: %{http_code}\n" http://localhost/
-curl -o /dev/null -w "equipe:  %{http_code}\n" http://localhost:8081/
-curl -o /dev/null -w "cozinha: %{http_code}\n" http://localhost:8082/
+curl -o /dev/null -w "cliente: %{http_code}\n" http://localhost:1020/
+curl -o /dev/null -w "equipe:  %{http_code}\n" http://localhost:1021/
+curl -o /dev/null -w "cozinha: %{http_code}\n" http://localhost:1022/
 ```
 
 (Com domínio configurado, troque por `https://pedido.SEU-DOMINIO` etc.)
@@ -194,8 +194,8 @@ veja `logs api`.
 sudo ufw allow OpenSSH
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
-sudo ufw allow 8081/tcp     # só no modo sem domínio
-sudo ufw allow 8082/tcp     # só no modo sem domínio
+sudo ufw allow 1020/tcp     # só no modo sem domínio
+sudo ufw allow 1021/tcp && sudo ufw allow 1022/tcp   # idem
 sudo ufw enable
 ```
 
@@ -207,7 +207,7 @@ firewall no painel web**, independente do `ufw`. Se o site não abrir de fora
 mesmo com o passo 7 respondendo `200`, é quase sempre lá — libere 80 e 443 nas
 regras de rede do provedor.
 
-**Conferência:** abra `http://IP_DA_VM` no celular, usando dados móveis (não o
+**Conferência:** abra `http://IP_DA_VM:1020` no celular, usando dados móveis (não o
 wi-fi). Tem que carregar o cardápio.
 
 ---
@@ -216,9 +216,9 @@ wi-fi). Tem que carregar o cardápio.
 
 | Endereço | Para quem |
 |---|---|
-| `http://IP_DA_VM` (ou `https://pedido.SEU-DOMINIO`) | clientes do evento |
-| `http://IP_DA_VM:8081` (ou `https://equipe.SEU-DOMINIO`) | balcão, caixa, admin |
-| `http://IP_DA_VM:8082` (ou `https://cozinha.SEU-DOMINIO`) | painel da cozinha |
+| `http://IP_DA_VM:1020` (ou `https://pedido.SEU-DOMINIO`) | clientes do evento |
+| `http://IP_DA_VM:1021` (ou `https://equipe.SEU-DOMINIO`) | balcão, caixa, admin |
+| `http://IP_DA_VM:1022` (ou `https://cozinha.SEU-DOMINIO`) | painel da cozinha |
 
 Entre em **equipe** como `owner@ecricircus.app` / `ecri123` e vá em **Contas de
 acesso**: troque a senha de todas. A senha do seed está publicada no

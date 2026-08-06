@@ -100,11 +100,14 @@ services:
     image: caddy:2-alpine
     restart: unless-stopped
     ports:
+      # Modo COM domínio: HTTP (redireciona para HTTPS) e HTTPS.
       - "80:80"
       - "443:443"
-      # Sem domínio, os apps saem por estas portas (ver Caddyfile.sem-dominio).
-      - "8081:8081"
-      - "8082:8082"
+      # Modo SEM domínio: uma porta por app (ver Caddyfile.sem-dominio).
+      # 1020 cliente · 1021 equipe · 1022 cozinha
+      - "1020:1020"
+      - "1021:1021"
+      - "1022:1022"
     volumes:
       - ${CADDYFILE:-./Caddyfile}:/etc/caddy/Caddyfile:ro
       # Certificados emitidos ficam no volume: sem ele, cada `up` pede tudo de

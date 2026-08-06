@@ -58,7 +58,7 @@ nano .env
 
 Preencha também `DOMAIN` e `TLS_EMAIL`. **Sem domínio ainda?** Deixe `DOMAIN`
 vazio e troque para `CADDYFILE=./Caddyfile.sem-dominio` — os apps saem por
-`http://IP`, `http://IP:8081` e `http://IP:8082`. Leia o cabeçalho daquele
+`http://IP:1020`, `http://IP:1021` e `http://IP:1022`. Leia o cabeçalho daquele
 arquivo: sem HTTPS o app não instala no celular e a senha da equipe trafega em
 texto claro. Serve para testar, não para o evento.
 
@@ -87,7 +87,7 @@ sudo ufw allow 443/tcp
 sudo ufw enable
 ```
 
-Se estiver usando o modo sem domínio, libere também `8081/tcp` e `8082/tcp`.
+Se estiver usando o modo sem domínio, libere `1020/tcp`, `1021/tcp` e `1022/tcp` (e NÃO precisa da 80/443).
 Nenhuma regra para 5432: o banco não tem porta publicada, e é assim que deve
 continuar. Provedores de nuvem costumam ter um firewall próprio no painel —
 ajuste lá também.

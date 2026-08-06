@@ -5,27 +5,30 @@
 # como distinguir um do outro no mesmo endereço — e servir cada SPA num
 # subcaminho quebraria as rotas internas dela.
 #
-#   http://SEU_IP        → app do cliente
-#   http://SEU_IP:8081   → app da equipe (balcão, caixa, admin)
-#   http://SEU_IP:8082   → painel da cozinha
+#   http://SEU_IP:1020   → app do cliente
+#   http://SEU_IP:1021   → app da equipe (balcão, caixa, admin)
+#   http://SEU_IP:1022   → painel da cozinha
+#
+# As três portas precisam estar liberadas NO FIREWALL DA VM e também nas regras
+# de rede do painel do provedor — são dois firewalls independentes.
 #
 # O QUE VOCÊ PERDE sem HTTPS, e vale saber antes do evento:
 #  · o navegador marca o site como "não seguro" — as pessoas veem isso ao pedir;
 #  · o app não instala como aplicativo no celular nem funciona offline (o
 #    service worker do PWA exige HTTPS);
-#  · a senha da equipe trafega em texto claro na rede local.
+#  · a senha da equipe trafega em texto claro na rede.
 #
 # Serve para testar a VM hoje. Para o evento, aponte um domínio e troque o
 # CADDYFILE no .env para ./Caddyfile.
 
-:80 {
+:1020 {
 	reverse_proxy web-order:80
 }
 
-:8081 {
+:1021 {
 	reverse_proxy web-staff:80
 }
 
-:8082 {
+:1022 {
 	reverse_proxy web-kds:80
 }
