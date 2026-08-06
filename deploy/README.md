@@ -50,7 +50,7 @@ cd ecricircus/deploy
 
 ```bash
 cp .env.example .env
-openssl rand -base64 24   # cole em POSTGRES_PASSWORD
+openssl rand -hex 24      # cole em POSTGRES_PASSWORD  (hex: ver .env.example)
 openssl rand -hex 32      # cole em JWT_ACCESS_SECRET
 openssl rand -hex 32      # cole em JWT_REFRESH_SECRET  (valor DIFERENTE)
 nano .env

@@ -113,11 +113,15 @@ feito.
 
 ```bash
 cp .env.example .env
-openssl rand -base64 24      # copie o resultado → POSTGRES_PASSWORD
+openssl rand -hex 24         # copie o resultado → POSTGRES_PASSWORD
 openssl rand -hex 32         # copie o resultado → JWT_ACCESS_SECRET
-openssl rand -hex 32         # copie OUTRO resultado → JWT_REFRESH_SECRET
+openssl rand -hex 32         # rode DE NOVO → JWT_REFRESH_SECRET (valor diferente)
 nano .env
 ```
+
+Os três comandos são `hex` de propósito: a senha do banco entra dentro de um
+endereço de conexão, e caracteres como `/` e `+` (que o `base64` gera) partem
+esse endereço ao meio — o banco tentaria conectar num host inexistente.
 
 No `nano`: edite, `Ctrl+O` e `Enter` para salvar, `Ctrl+X` para sair.
 
