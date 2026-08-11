@@ -27,6 +27,7 @@ export function MenuAdminComponent() {
       stationId: STATIONS[0].id,
       isCombo: false,
       comboItems: '',
+      semPreparo: false,
     },
   });
 
@@ -39,9 +40,13 @@ export function MenuAdminComponent() {
         stationId: values.stationId,
         isCombo: values.isCombo,
         comboItems: values.comboItems,
+        requiresPreparation: !values.semPreparo,
       },
       {
-        onSuccess: () => reset({ ...values, name: '', price: '', isCombo: false, comboItems: '' }),
+        onSuccess: () =>
+          // A categoria, a estação e "sem preparo" ficam: quem cadastra fichas
+          // cadastra várias seguidas, e refazer a escolha a cada uma é atrito.
+          reset({ ...values, name: '', price: '', isCombo: false, comboItems: '' }),
       },
     );
   });
@@ -89,6 +94,17 @@ export function MenuAdminComponent() {
 
             <label className="flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium">
               <input type="checkbox" {...register('isCombo')} />É combo
+            </label>
+
+            <label className="flex items-start gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium">
+              <input type="checkbox" className="mt-0.5" {...register('semPreparo')} />
+              <span>
+                <span className="block">Não passa pela cozinha</span>
+                <span className="mt-0.5 block text-xs font-normal text-muted">
+                  Para fichas e créditos: entra na conta e no relatório, mas não vira comanda no
+                  painel da cozinha.
+                </span>
+              </span>
             </label>
 
             <label className="block">

@@ -15,7 +15,10 @@ type LoginForm = z.infer<typeof schema>;
 
 export function LoginComponent() {
   const navigate = useNavigate();
-  const { redirect } = useSearch({ strict: false }) as { redirect?: string };
+  const { redirect, expirado } = useSearch({ strict: false }) as {
+    redirect?: string;
+    expirado?: string;
+  };
   const lastEmail = useAuthStore((s) => s.lastEmail);
   const login = useLogin();
 
@@ -65,6 +68,11 @@ export function LoginComponent() {
             <span className="text-xs text-danger">{errors.password.message}</span>
           )}
         </label>
+        {expirado === '1' && (
+          <p className="rounded-lg bg-accent/15 px-3 py-2 text-sm text-accent">
+            A sessão saiu por 10 minutos sem uso. Entre novamente.
+          </p>
+        )}
         {login.isError && <p className="text-sm text-danger">Credenciais inválidas.</p>}
         <Button type="submit" className="w-full" disabled={login.isPending}>
           {login.isPending ? 'Entrando…' : 'Entrar'}

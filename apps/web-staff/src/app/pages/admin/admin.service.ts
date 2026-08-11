@@ -22,6 +22,8 @@ export function useCreateMenuItem() {
       stationId: string;
       isCombo?: boolean;
       comboItems?: string;
+      /** `false` = ficha: entra na conta sem virar comanda na cozinha. */
+      requiresPreparation?: boolean;
     }) => {
       const { data } = await apiClient.post('/admin/menu', input);
       return data;

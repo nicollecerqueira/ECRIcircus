@@ -37,6 +37,14 @@ export class MenuItem {
   @Property({ type: 'text', nullable: true })
   comboItems?: string;
 
+  /**
+   * Se o item passa pela cozinha. `false` é o caso da FICHA: crédito comprado no
+   * balcão, sem nada a preparar nem a entregar — ele entra na conta e no
+   * relatório, mas nunca vira comanda no KDS.
+   */
+  @Property({ default: true })
+  requiresPreparation = true;
+
   @Property({ default: true })
   available = true;
 

@@ -26,12 +26,19 @@ export const ticketSchema = z.object({
   name: z.string(),
   qty: z.number(),
   notes: optionalText,
-  state: z.enum(['queued', 'preparing']),
+  state: z.enum(['queued', 'preparing', 'ready']),
   firedAt: z.string(),
 });
 export type Ticket = z.infer<typeof ticketSchema>;
 
+/** Pedido inteiro pronto — nada mais a preparar, só entregar. */
+export function pedidoPronto(order: { tickets: Ticket[] }): boolean {
+  return order.tickets.length > 0 && order.tickets.every((t) => t.state === 'ready');
+}
+
 export const kitchenOrderSchema = z.object({
+  /** Chave do LOTE. A mesma conta rende vários boxes — um por pedido feito. */
+  batchId: z.string(),
   orderId: z.string(),
   tableId: optionalText,
   tableLabel: optionalText,

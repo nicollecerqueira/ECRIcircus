@@ -161,6 +161,10 @@ export function ItemRow({ item }: { item: MenuItem }) {
           )}
           {item.isCombo && <Badge tone="primary">combo</Badge>}
           {item.onPromo && <Badge tone="danger">promo</Badge>}
+          {/* Sem este selo, item que não vai para a cozinha fica igual aos
+              outros na lista, e só se descobre o engano quando a comanda não
+              aparece (ou aparece) no painel. */}
+          {!item.requiresPreparation && <Badge tone="neutral">sem preparo</Badge>}
         </span>
         <div className="flex items-center gap-2">
           <Badge tone={item.available ? 'success' : 'neutral'}>

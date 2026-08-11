@@ -17,8 +17,11 @@ const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/login',
   component: LoginComponent,
-  validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
+  // `expirado` é posto pelo corte por inatividade: sem ele, a pessoa volta ao
+  // login sem saber por quê e acha que o sistema a derrubou por erro.
+  validateSearch: (search: Record<string, unknown>): { redirect?: string; expirado?: string } => ({
     redirect: typeof search.redirect === 'string' ? search.redirect : undefined,
+    expirado: search.expirado === '1' ? '1' : undefined,
   }),
 });
 

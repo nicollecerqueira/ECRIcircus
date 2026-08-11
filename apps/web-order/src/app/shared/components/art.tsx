@@ -63,11 +63,11 @@ export function Art({ name, size = 'lg', fallback, className = '' }: ArtProps) {
 }
 
 /** As atrações da casa, em fila — como o elenco no rodapé de um cartaz. */
-const CAST: { name: ArtName; label: string; fallback: string }[] = [
-  { name: 'ticket', label: 'Ingresso', fallback: '🎟️' },
-  { name: 'popcornBucket', label: 'Pipoca', fallback: '🍿' },
-  { name: 'seal', label: 'Foca', fallback: '🦭' },
-  { name: 'rabbitHat', label: 'Mágica', fallback: '🎩' },
+const CAST: { name: ArtName; fallback: string }[] = [
+  { name: 'ticket', fallback: '🎟️' },
+  { name: 'popcornBucket', fallback: '🍿' },
+  { name: 'seal', fallback: '🦭' },
+  { name: 'rabbitHat', fallback: '🎩' },
 ];
 
 /**
@@ -79,13 +79,13 @@ const CAST: { name: ArtName; label: string; fallback: string }[] = [
  */
 export function Attractions({ className = '' }: { className?: string }) {
   return (
-    <ul className={`flex items-end justify-center gap-5 ${className}`}>
+    // Sem os nomes embaixo, a faixa é 100% decorativa: vira um `div` com
+    // `aria-hidden`, em vez de uma lista que o leitor de tela anunciaria como
+    // "lista de 4 itens" sem ter o que ler dentro.
+    <div aria-hidden className={`flex items-end justify-center gap-5 ${className}`}>
       {CAST.map((item) => (
-        <li key={item.name} className="flex flex-col items-center gap-1">
-          <Art name={item.name} size="sm" fallback={item.fallback} />
-          <span className="text-[0.625rem] uppercase tracking-widest text-muted">{item.label}</span>
-        </li>
+        <Art key={item.name} name={item.name} size="sm" fallback={item.fallback} />
       ))}
-    </ul>
+    </div>
   );
 }

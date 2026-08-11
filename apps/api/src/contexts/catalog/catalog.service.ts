@@ -16,6 +16,8 @@ export interface MenuItemView {
   effectivePriceCents: number;
   isCombo: boolean;
   comboItems?: string;
+  /** `false` = ficha e afins: entra na conta, nunca vira comanda na cozinha. */
+  requiresPreparation: boolean;
   promoPriceCents: number | null;
   promoStartsAt: string | null;
   promoEndsAt: string | null;
@@ -33,6 +35,7 @@ export function toItemView(i: MenuItem): MenuItemView {
     effectivePriceCents: effectivePriceCents(i),
     isCombo: i.isCombo,
     comboItems: i.comboItems ?? undefined,
+    requiresPreparation: i.requiresPreparation,
     promoPriceCents: i.promoPriceCents ?? null,
     promoStartsAt: i.promoStartsAt?.toISOString() ?? null,
     promoEndsAt: i.promoEndsAt?.toISOString() ?? null,
@@ -61,7 +64,7 @@ export class CatalogService {
       {},
       { populate: ['tenant'], orderBy: { sortOrder: 'asc', name: 'asc' } },
     );
-    const items = await this.em.find(MenuItem, {}, { orderBy: { name: 'asc' } });
+    const items = await this.em.find(MenuItem, {}, { orderBy: { priceCents: 'asc', name: 'asc' } });
     return this.assemble(categories, items);
   }
 
@@ -81,7 +84,7 @@ export class CatalogService {
     const items = await this.em.find(
       MenuItem,
       { tenant: tenantId },
-      { filters: false, orderBy: { name: 'asc' } },
+      { filters: false, orderBy: { priceCents: 'asc', name: 'asc' } },
     );
     return this.assemble(categories, items);
   }
@@ -141,6 +144,7 @@ export class CatalogService {
     stationId: string;
     isCombo?: boolean;
     comboItems?: string;
+    requiresPreparation?: boolean;
   }): Promise<MenuItemView> {
     const category = await this.em.findOne(Category, { id: input.categoryId });
     if (!category) {
@@ -155,6 +159,7 @@ export class CatalogService {
       priceCents: input.priceCents,
       isCombo: input.isCombo ?? false,
       comboItems: input.comboItems?.trim() || undefined,
+      requiresPreparation: input.requiresPreparation ?? true,
       stationId: input.stationId,
       available: true,
       createdAt: new Date(),
@@ -172,6 +177,7 @@ export class CatalogService {
       stationId?: string;
       isCombo?: boolean;
       comboItems?: string;
+      requiresPreparation?: boolean;
       /** `null` limpa a promoção. */
       promoPriceCents?: number | null;
       promoStartsAt?: string | null;
@@ -203,6 +209,9 @@ export class CatalogService {
     }
     if (patch.comboItems !== undefined) {
       item.comboItems = patch.comboItems.trim() || undefined;
+    }
+    if (patch.requiresPreparation !== undefined) {
+      item.requiresPreparation = patch.requiresPreparation;
     }
     if (patch.promoPriceCents !== undefined) {
       item.promoPriceCents = patch.promoPriceCents ?? undefined;
@@ -242,10 +251,14 @@ export class CatalogService {
   }
 
   async createCategory(name: string): Promise<{ id: string; name: string }> {
+    // Vai para o FIM do cardápio. Com `sortOrder: 0` fixo, toda categoria nova
+    // nascia na frente das que já existiam — "Fichas" apareceu antes de
+    // "Lanches" na tela do cliente sem ninguém pedir isso.
+    const ultima = await this.em.findOne(Category, {}, { orderBy: { sortOrder: 'desc' } });
     const category = this.em.create(Category, {
       tenant: this.em.getReference(Brand, currentTenant().tenantId),
       name,
-      sortOrder: 0,
+      sortOrder: (ultima?.sortOrder ?? 0) + 1,
       createdAt: new Date(),
     });
     await this.em.flush();

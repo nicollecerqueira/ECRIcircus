@@ -61,6 +61,8 @@ function toOrderView(o: OrderEntity): Order {
         state: i.state,
         notes: i.notes ?? undefined,
         voidReason: i.voidReason ?? undefined,
+        deliveryRoom: i.deliveryRoom ?? undefined,
+        createdAt: i.createdAt.toISOString(),
       })),
     payments: o.payments
       .getItems()
@@ -219,6 +221,11 @@ export class OrderService {
     if (!menuItem.available) {
       throw new BadRequestException(`${menuItem.name} está indisponível`);
     }
+    // Ficha e afins não passam pela cozinha: nascem SERVIDAS. O board do KDS
+    // lista o que está em `queued`/`preparing`, então este item nunca aparece
+    // lá — e o pedido não fica preso em "na cozinha" esperando alguém marcar
+    // como pronto algo que não existe para preparar.
+    const preparar = menuItem.requiresPreparation;
     const item = this.em.create(OrderItemEntity, {
       tenant: order.tenant,
       order,
@@ -228,28 +235,34 @@ export class OrderService {
       unitPriceCents: effectivePriceCents(menuItem),
       qty: input.qty,
       stationId: menuItem.stationId,
-      state: 'queued',
+      state: preparar ? 'queued' : 'served',
       notes: input.notes,
+      // Cópia da sala VIGENTE. Se a pessoa mudar de sala e pedir de novo, este
+      // item continua apontando para onde ela estava quando pediu.
+      deliveryRoom: order.deliveryRoom,
       createdAt: new Date(),
     });
     order.items.add(item);
-    // O primeiro item disparado leva o pedido para a cozinha.
-    if (order.status === 'open') {
+    // O primeiro item disparado leva o pedido para a cozinha — só se houver o
+    // que preparar. Conta de fichas apenas segue aberta, aguardando o caixa.
+    if (preparar && order.status === 'open') {
       order.status = 'in_kitchen';
     }
     this.touch(order);
     await this.em.flush();
 
-    this.events.emit(DomainEvent.ItemFired, {
-      tenantId: order.tenant.id,
-      locationId: order.location.id,
-      stationId: item.stationId,
-      orderId: order.id,
-      itemId: item.id,
-      name: item.name,
-      qty: item.qty,
-      notes: item.notes,
-    });
+    if (preparar) {
+      this.events.emit(DomainEvent.ItemFired, {
+        tenantId: order.tenant.id,
+        locationId: order.location.id,
+        stationId: item.stationId,
+        orderId: order.id,
+        itemId: item.id,
+        name: item.name,
+        qty: item.qty,
+        notes: item.notes,
+      });
+    }
     this.emitUpdated(order);
     return this.viewOf(order);
   }

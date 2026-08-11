@@ -42,6 +42,10 @@ export interface OrderItem {
   state: ItemState;
   notes?: string;
   voidReason?: string;
+  /** Sala capturada no lançamento — o destino DESTE pedido, não o atual da conta. */
+  deliveryRoom?: string;
+  /** Instante do lançamento. É por ele que a cozinha separa um pedido do outro. */
+  createdAt: string;
 }
 
 export interface Payment {

@@ -104,3 +104,84 @@ body {
     box-shadow 0.2s ease,
     border-color 0.2s ease;
 }
+
+/* ─── Movimento do painel ──────────────────────────────────────────────────
+   A cozinha olha a tela de longe e de relance: mudança de estado precisa
+   ANUNCIAR-SE, senão passa despercebida entre um pedido e outro. Tudo aqui é
+   curto e sem laço — animação que fica repetindo vira ruído numa TV ligada o
+   dia inteiro. */
+
+/* Item que acabou de mudar de estado: um pulso claro atravessa o cartão. */
+@keyframes kds-flash {
+  0% {
+    background-color: color-mix(in srgb, var(--accent) 45%, transparent);
+    transform: scale(1.02);
+  }
+  100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+}
+
+.kds-flash {
+  animation: kds-flash 0.7s ease-out;
+}
+
+/* Pedido que acabou de ficar inteiro pronto. */
+@keyframes kds-celebra {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.kds-celebra {
+  animation: kds-celebra 0.6s ease-out;
+}
+
+/* Confete: cada peça cai girando, com atraso e posição vindos do style inline.
+   `pointer-events: none` para nunca roubar o toque de quem opera. */
+.kds-confete {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.kds-confete i {
+  position: absolute;
+  top: -12px;
+  width: 10px;
+  height: 14px;
+  opacity: 0;
+  animation: kds-cai 1.4s ease-in forwards;
+}
+
+@keyframes kds-cai {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(320px) rotate(540deg);
+  }
+}
+
+/* Quem pediu menos movimento recebe a mudança de cor, sem a dança. */
+@media (prefers-reduced-motion: reduce) {
+  .kds-flash,
+  .kds-celebra,
+  .kds-confete i {
+    animation: none;
+  }
+  .kds-confete {
+    display: none;
+  }
+}

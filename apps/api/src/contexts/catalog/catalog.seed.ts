@@ -9,7 +9,14 @@ import { MenuItem } from './domain/menu-item.entity';
 interface SeedCategory {
   name: string;
   sortOrder: number;
-  items: { name: string; priceCents: number; stationId: string; available?: boolean }[];
+  items: {
+    name: string;
+    priceCents: number;
+    stationId: string;
+    available?: boolean;
+    /** `false` = não passa pela cozinha (ficha). Ausente = passa. */
+    requiresPreparation?: boolean;
+  }[];
 }
 
 /**
@@ -45,6 +52,25 @@ const BRAND_A_MENU: SeedCategory[] = [
       { name: 'Algodão doce', priceCents: 500, stationId: 'st-doces' },
       { name: 'Picolé', priceCents: 400, stationId: 'st-doces' },
       { name: 'Brigadeiro', priceCents: 300, stationId: 'st-doces' },
+    ],
+  },
+  {
+    // Ficha é CRÉDITO, não comida: a pessoa compra o valor e usa depois. Por
+    // isso `requiresPreparation: false` — não vira comanda na cozinha, só entra
+    // na conta e no relatório de vendas. Os valores são um ponto de partida;
+    // ajuste, some ou remova em /admin/menu.
+    name: 'Fichas',
+    sortOrder: 4,
+    items: [
+      { name: 'Ficha R$ 1', priceCents: 100, stationId: 'st-lanches', requiresPreparation: false },
+      { name: 'Ficha R$ 2', priceCents: 200, stationId: 'st-lanches', requiresPreparation: false },
+      { name: 'Ficha R$ 5', priceCents: 500, stationId: 'st-lanches', requiresPreparation: false },
+      {
+        name: 'Ficha R$ 10',
+        priceCents: 1000,
+        stationId: 'st-lanches',
+        requiresPreparation: false,
+      },
     ],
   },
 ];
@@ -110,6 +136,7 @@ export class CatalogSeedService implements OnModuleInit {
           name: item.name,
           priceCents: item.priceCents,
           isCombo: false,
+          requiresPreparation: item.requiresPreparation ?? true,
           stationId: item.stationId,
           available: item.available ?? true,
           createdAt: new Date(),

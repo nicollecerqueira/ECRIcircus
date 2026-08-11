@@ -19,8 +19,12 @@ export function useBoard() {
       const { data } = await apiClient.get<Board>('/kds/board');
       return boardSchema.parse(data);
     },
-    // Socket events drive updates; this is a slow safety-net refetch.
+    // Rede de segurança para quando o socket cair. `InBackground` é essencial
+    // aqui: por padrão o React Query PAUSA o refetch periódico com a janela
+    // fora de foco, e a TV da cozinha nunca está em foco — sem isto, socket
+    // caído significa painel congelado até alguém tocar na tela.
     refetchInterval: 30000,
+    refetchIntervalInBackground: true,
   });
 }
 

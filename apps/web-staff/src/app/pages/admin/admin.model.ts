@@ -18,6 +18,10 @@ export const menuItemFormSchema = z.object({
   stationId: z.string().min(1, 'Escolha a estação'),
   isCombo: z.boolean(),
   comboItems: z.string().optional(),
+  /** Marcado = ficha/crédito: entra na conta sem virar comanda na cozinha.
+      O formulário pergunta pela NEGATIVA porque o normal é passar pela
+      cozinha — a exceção é que merece um clique consciente. */
+  semPreparo: z.boolean(),
 });
 export type MenuItemForm = z.infer<typeof menuItemFormSchema>;
 

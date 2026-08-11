@@ -21,13 +21,25 @@ export class KitchenService {
     return stations.map((s) => ({ id: s.code, name: s.name, kind: s.kind }));
   }
 
-  /** Board único da cozinha: pedidos com itens ainda a preparar, oldest first. */
+  /**
+   * Board único da cozinha.
+   *
+   * Inclui o que está PRONTO, e não só o que falta preparar: antes o pedido
+   * sumia da tela no instante em que o último item ficava pronto, e a cozinha
+   * perdia de vista justamente o que alguém ainda tem de ir buscar e entregar.
+   * Ele sai da tela quando a conta é fechada ou cancelada no caixa — aí sim
+   * acabou.
+   *
+   * `served` fica de fora: é o estado das fichas, que não passam pela cozinha.
+   */
   async board() {
-    const orders = await this.orders.list();
+    const orders = (await this.orders.list()).filter(
+      (o) => o.status !== 'closed' && o.status !== 'cancelled',
+    );
     const tickets = orders
       .flatMap((order) =>
         order.items
-          .filter((i) => i.state === 'queued' || i.state === 'preparing')
+          .filter((i) => i.state === 'queued' || i.state === 'preparing' || i.state === 'ready')
           .map((i) => ({
             orderId: order.id,
             tableId: order.tableId,
@@ -35,13 +47,17 @@ export class KitchenService {
             // Quem entrega lê a comanda: sem nome e sala, o prato fica pronto
             // sem ninguém saber para onde levá-lo.
             customerName: order.customerName,
-            deliveryRoom: order.deliveryRoom,
+            // A sala do ITEM (capturada no lançamento) manda; a da conta é só
+            // reserva para itens antigos, anteriores a essa captura.
+            deliveryRoom: i.deliveryRoom ?? order.deliveryRoom,
             itemId: i.id,
             name: i.name,
             qty: i.qty,
             notes: i.notes,
             state: i.state,
-            firedAt: order.createdAt,
+            // O instante do ITEM, não o da conta: é a idade DESTE pedido que a
+            // cozinha precisa ver, não há quanto tempo a pessoa abriu a conta.
+            firedAt: i.createdAt,
           })),
       )
       .sort((a, b) => a.firedAt.localeCompare(b.firedAt));
@@ -53,26 +69,64 @@ export class KitchenService {
       ...t,
       tableLabel: t.tableId ? `Mesa ${numbers.get(t.tableId) ?? '?'}` : undefined,
     }));
-    const byOrder = new Map<string, (typeof withLabel)[number][]>();
-    for (const ticket of withLabel) {
-      byOrder.set(ticket.orderId, [...(byOrder.get(ticket.orderId) ?? []), ticket]);
-    }
 
+    const lotes = this.agruparEmPedidos(withLabel);
     return {
-      orders: [...byOrder.entries()].map(([orderId, orderTickets]) => {
-        const first = orderTickets[0];
+      orders: lotes.map((loteTickets, i) => {
+        const first = loteTickets[0];
         return {
-          orderId,
+          // Chave do LOTE, não da conta: a mesma conta rende vários boxes.
+          batchId: `${first.orderId}:${first.firedAt}:${i}`,
+          orderId: first.orderId,
           tableId: first.tableId,
           tableLabel: first.tableLabel,
           customerName: first.customerName,
           deliveryRoom: first.deliveryRoom,
           channel: first.channel,
           firedAt: first.firedAt,
-          tickets: orderTickets,
+          tickets: loteTickets,
         };
       }),
     };
+  }
+
+  /**
+   * Quebra os itens de cada conta em PEDIDOS distintos — um box por vez que a
+   * pessoa pediu, e não um box gigante com tudo que ela consumiu no evento.
+   *
+   * Não existe "id do pedido" no banco: a conta é uma só e cada item entra por
+   * uma chamada separada. O que separa um pedido do outro é o intervalo — os
+   * itens de um mesmo carrinho entram em sequência, em segundos; o pedido
+   * seguinte vem minutos depois. Uma troca de sala também abre lote novo, ainda
+   * que colada no tempo: destino diferente é entrega diferente.
+   */
+  private agruparEmPedidos<T extends { orderId: string; firedAt: string; deliveryRoom?: string }>(
+    tickets: T[],
+  ): T[][] {
+    /** Silêncio que encerra um pedido. Acima disto, o próximo item é outro. */
+    const INTERVALO_MS = 90_000;
+    const lotes: T[][] = [];
+
+    for (const conta of new Set(tickets.map((t) => t.orderId))) {
+      const daConta = tickets.filter((t) => t.orderId === conta);
+      let atual: T[] = [];
+      for (const ticket of daConta) {
+        const anterior = atual.at(-1);
+        const distante =
+          anterior !== undefined &&
+          new Date(ticket.firedAt).getTime() - new Date(anterior.firedAt).getTime() > INTERVALO_MS;
+        const outraSala = anterior !== undefined && anterior.deliveryRoom !== ticket.deliveryRoom;
+        if (anterior !== undefined && (distante || outraSala)) {
+          lotes.push(atual);
+          atual = [];
+        }
+        atual.push(ticket);
+      }
+      if (atual.length > 0) {
+        lotes.push(atual);
+      }
+    }
+    return lotes.sort((a, b) => a[0].firedAt.localeCompare(b[0].firedAt));
   }
 
   advance(itemId: string, next: 'preparing' | 'ready') {

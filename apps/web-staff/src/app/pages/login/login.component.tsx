@@ -16,7 +16,10 @@ type LoginForm = z.infer<typeof schema>;
 
 export function LoginComponent() {
   const navigate = useNavigate();
-  const { redirect } = useSearch({ strict: false }) as { redirect?: string };
+  const { redirect, expirado } = useSearch({ strict: false }) as {
+    redirect?: string;
+    expirado?: string;
+  };
   const lastEmail = useAuthStore((s) => s.lastEmail);
   const login = useLogin();
 
@@ -47,6 +50,12 @@ export function LoginComponent() {
           <h1 className="circus-wordmark text-2xl font-bold">ECRI Circus</h1>
           <p className="text-sm text-muted">Entre para acessar o salão e o caixa.</p>
         </div>
+        {expirado === '1' && (
+          <p className="rounded-lg bg-accent/15 px-3 py-2 text-sm text-accent">
+            Sua sessão saiu por 10 minutos sem uso. Entre novamente.
+          </p>
+        )}
+
         <FormField
           label="E-mail"
           type="email"

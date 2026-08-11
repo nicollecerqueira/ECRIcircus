@@ -64,6 +64,9 @@ export const menuItemSchema = z.object({
   /** Preço que o cliente paga agora (o "por") — já considera promoção ativa. */
   effectivePriceCents: z.number(),
   isCombo: z.boolean().default(false),
+  /** `false` = ficha: entra na conta sem virar comanda na cozinha. O default
+      `true` cobre resposta de API antiga, que não traz o campo. */
+  requiresPreparation: z.boolean().default(true),
   comboItems: optionalText,
   promoPriceCents: z.number().nullable(),
   promoStartsAt: z.string().nullable(),
