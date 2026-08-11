@@ -1,6 +1,13 @@
 import { useParams } from '@tanstack/react-router';
 import { Art } from '../../shared/components/art';
-import { Badge, Card, Kicker, PosterHeading, Spinner, StarDivider } from '../../shared/components/ui';
+import {
+  Badge,
+  Card,
+  Kicker,
+  PosterHeading,
+  Spinner,
+  StarDivider,
+} from '../../shared/components/ui';
 import { formatCents } from '../../shared/utils/money';
 import { useMenu } from '../order/order.service';
 

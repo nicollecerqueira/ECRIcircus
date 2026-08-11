@@ -36,8 +36,14 @@ export const orderSchema = z.object({
   teamName: optionalText,
   deliveryRoom: optionalText,
   paymentIntent: z.enum(['pix', 'cash', 'card', 'account']).optional(),
-  cashNeedsChange: z.boolean().nullish().transform((v) => v ?? undefined),
-  cashChangeForCents: z.number().nullish().transform((v) => v ?? undefined),
+  cashNeedsChange: z
+    .boolean()
+    .nullish()
+    .transform((v) => v ?? undefined),
+  cashChangeForCents: z
+    .number()
+    .nullish()
+    .transform((v) => v ?? undefined),
   status: z.string(),
   items: z
     .object({

@@ -55,7 +55,9 @@ export function useSubmitOrder() {
         paymentIntent: paymentChoice,
         cashNeedsChange: paymentChoice === 'cash' ? cashNeedsChange : undefined,
         cashChangeForCents:
-          paymentChoice === 'cash' && cashNeedsChange ? (cashChangeForCents ?? undefined) : undefined,
+          paymentChoice === 'cash' && cashNeedsChange
+            ? (cashChangeForCents ?? undefined)
+            : undefined,
       });
       for (const line of lines) {
         await apiClient.post(`/orders/${order.id}/items`, {
