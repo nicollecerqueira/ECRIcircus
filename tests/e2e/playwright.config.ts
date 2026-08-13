@@ -8,7 +8,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: process.env.STAFF_URL ?? 'http://localhost:5173',
+    baseURL: process.env.STAFF_URL ?? 'http://localhost:1021',
     trace: 'on-first-retry',
   },
 });

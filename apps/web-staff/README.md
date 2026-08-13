@@ -6,7 +6,7 @@ naming, central `app.routes.ts`).
 
 ```bash
 pnpm install
-pnpm dev        # http://localhost:5173  (proxies /api and /realtime → :3000)
+pnpm dev        # http://localhost:1021  (proxies /api and /realtime → :3000)
 ```
 
 ## Layout

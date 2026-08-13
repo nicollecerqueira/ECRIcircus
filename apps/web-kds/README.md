@@ -5,7 +5,7 @@ Avenir Angular project convention as the other apps.
 
 ```bash
 pnpm install
-pnpm dev        # http://localhost:5174  (proxies /api and /realtime → :3000)
+pnpm dev        # http://localhost:1022  (proxies /api and /realtime → :3000)
 ```
 
 - **Station picker** (`/`) → **Station board** (`/station/$id`).

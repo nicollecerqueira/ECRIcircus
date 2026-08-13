@@ -5,9 +5,9 @@
   "type": "module",
   "description": "Prato web-kds — Kitchen Display System (React 19, real-time, kiosk)",
   "scripts": {
-    "dev": "vite --port 5174",
+    "dev": "vite --port 1022",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview --port 5174",
+    "preview": "vite preview --port 1022",
     "biome": "biome",
     "typecheck": "tsc --noEmit"
   },

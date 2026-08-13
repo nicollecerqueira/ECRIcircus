@@ -5,9 +5,9 @@
   "type": "module",
   "description": "Prato web-order — public QR self-order + delivery storefront (React 19)",
   "scripts": {
-    "dev": "vite --port 5175",
+    "dev": "vite --port 1020",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview --port 5175",
+    "preview": "vite preview --port 1020",
     "biome": "biome",
     "typecheck": "tsc --noEmit"
   },

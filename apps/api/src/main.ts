@@ -25,9 +25,9 @@ async function bootstrap() {
   // CORS for the three web app dev origins.
   app.enableCors({
     origin: [
-      config.get<string>('WEB_STAFF_ORIGIN') ?? 'http://localhost:5173',
-      config.get<string>('WEB_KDS_ORIGIN') ?? 'http://localhost:5174',
-      config.get<string>('WEB_ORDER_ORIGIN') ?? 'http://localhost:5175',
+      config.get<string>('WEB_STAFF_ORIGIN') ?? 'http://localhost:1021',
+      config.get<string>('WEB_KDS_ORIGIN') ?? 'http://localhost:1022',
+      config.get<string>('WEB_ORDER_ORIGIN') ?? 'http://localhost:1020',
     ],
     credentials: true,
   });

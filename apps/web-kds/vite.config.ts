@@ -21,7 +21,7 @@ export default defineConfig({
     }),
   ],
   server: {
-    port: 5174,
+    port: 1022,
     proxy: {
       '/api': { target: 'http://localhost:3000', changeOrigin: true },
       '/realtime': { target: 'http://localhost:3000', ws: true },

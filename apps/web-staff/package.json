@@ -5,9 +5,9 @@
   "type": "module",
   "description": "Prato web-staff — waiter + POS + admin (React 19, Angular project convention)",
   "scripts": {
-    "dev": "vite --port 5173",
+    "dev": "vite --port 1021",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview --port 5173",
+    "preview": "vite preview --port 1021",
     "biome": "biome",
     "typecheck": "tsc --noEmit"
   },

@@ -60,7 +60,7 @@ services:
     depends_on:
       - api
     ports:
-      - "5173:80"
+      - "1021:80"
 
   web-kds:
     build:
@@ -68,7 +68,7 @@ services:
     depends_on:
       - api
     ports:
-      - "5174:80"
+      - "1022:80"
 
   web-order:
     build:
@@ -76,7 +76,7 @@ services:
     depends_on:
       - api
     ports:
-      - "5175:80"
+      - "1020:80"
 
 volumes:
   ecri-pgdata:

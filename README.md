@@ -33,7 +33,7 @@ Each React app follows the **Avenir Angular project convention**
 ```bash
 docker compose -f docker-compose.full.yml up -d --build
 ```
-→ staff `:5173` · KDS `:5174` · diner `:5175` · API `:3000`. nginx in each web
+→ staff `:1021` · KDS `:1022` · diner `:1020` · API `:3000`. nginx in each web
 image proxies `/api` and `/realtime` to the API, so there is nothing else to wire.
 **No hot reload** — the images serve a production build.
 
@@ -44,9 +44,9 @@ docker compose -f docker-compose.dev.yml up -d
 
 # 2) each app is independent — install per app
 (cd apps/api        && cp .env.example .env && pnpm install && pnpm dev)  # :3000
-(cd apps/web-staff  && pnpm install && pnpm dev)                          # :5173
-(cd apps/web-kds    && pnpm install && pnpm dev)                          # :5174
-(cd apps/web-order  && pnpm install && pnpm dev)                          # :5175
+(cd apps/web-staff  && pnpm install && pnpm dev)                          # :1021
+(cd apps/web-kds    && pnpm install && pnpm dev)                          # :1022
+(cd apps/web-order  && pnpm install && pnpm dev)                          # :1020
 ```
 Or orchestrate everything: `pnpm install && pnpm dev` at the root (runs `tools/dev.mjs`).
 Use B for development; A for a quick demo or to hand the stack to someone else.
@@ -58,12 +58,12 @@ Use B for development; A for a quick demo or to hand the stack to someone else.
 > marca **ECRI Circus** e as contas `@ecricircus.app` (senha `ecri123`).
 
 ## Try the full loop (demo)
-1. **Staff** (`:5173`) → login `waiter@ecricircus.app` / `ecri123` → open a table → add items.
-2. **KDS** (`:5174`) → login `kitchen@ecricircus.app` → items appear live → tap to `preparing`/`ready`.
-3. **Diner** (`:5175/t/q_22222222-2222-2222-2222-222222222222_1`) → scan flow → order →
+1. **Staff** (`:1021`) → login `waiter@ecricircus.app` / `ecri123` → open a table → add items.
+2. **KDS** (`:1022`) → login `kitchen@ecricircus.app` → items appear live → tap to `preparing`/`ready`.
+3. **Diner** (`:1020/t/q_22222222-2222-2222-2222-222222222222_1`) → scan flow → order →
    `/track` updates in real time. O token do QR é `q_<locationId>_<mesa>`; veja os
    reais em **Admin → Mesas** no app do garçom.
-4. **POS** (`:5173/pos`) → close the bill, register a split payment.
+4. **POS** (`:1021/pos`) → close the bill, register a split payment.
 
 ## Conventions (Avenir standard)
 React 19 (no manual memo — React Compiler) · TanStack Router/Query · Tailwind 4
