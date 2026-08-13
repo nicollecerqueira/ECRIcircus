@@ -41,6 +41,11 @@ export function CartComponent() {
     paymentChoice !== 'cash' ||
     !cashNeedsChange ||
     (cashChangeForCents !== null && cashChangeForCents >= total);
+  // Nome + sobrenome. Não bloqueia o envio (há quem tenha nome de uma palavra
+  // só, e travar o pedido por isso seria pior), mas avisa: só o primeiro nome
+  // repete entre pessoas e é o que gera conta duplicada.
+  const hasFullName = customerName.trim().split(/\s+/).length > 1;
+
   // Os três identificam a entrega: quem é, de que equipe e para onde levar.
   const canSubmit =
     customerName.trim().length > 0 &&
@@ -141,6 +146,21 @@ export function CartComponent() {
 
       <StarDivider className="my-5" />
 
+      {/* O nome é a CHAVE da conta: os pedidos são agrupados por ele. Quem
+          escreve "Ana" num pedido e "Ana Silva" no outro acaba com duas contas
+          separadas, e o acerto no caixa sai pela metade. Por isso o aviso vem
+          antes do campo, e não como dica miúda embaixo. */}
+      <div className="mb-3 rounded-lg border border-gold/50 bg-accent/5 p-3">
+        <p className="text-sm font-semibold">
+          <span aria-hidden>⚠️</span> Escreva seu nome completo
+        </p>
+        <p className="mt-1 text-sm text-muted">
+          Seus pedidos são somados numa conta só pelo nome. Se você escrever de um jeito agora e de
+          outro depois, vai acabar com <strong>duas contas separadas</strong> — então use sempre o
+          nome completo, do mesmo jeito
+        </p>
+      </div>
+
       <label className="block">
         <span className="mb-1 block text-sm font-medium">Seu nome completo</span>
         <input
@@ -151,6 +171,11 @@ export function CartComponent() {
           onChange={(e) => setCustomerName(e.target.value)}
           className="w-full rounded-lg border border-border bg-surface px-3 py-2 outline-none focus:border-primary"
         />
+        {customerName.trim().length > 0 && !hasFullName && (
+          <span className="mt-1 block text-xs text-warning">
+            Parece faltar o sobrenome — só o primeiro nome costuma repetir entre pessoas.
+          </span>
+        )}
       </label>
 
       {/* Nome e equipe identificam a conta no balcão. Sem os dois, o pedido
