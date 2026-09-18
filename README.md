@@ -137,12 +137,72 @@ usada onde o pedido nasce — no balcão.
 vermelho marcam o envelhecimento da comanda, e por isso o vermelho da marca
 **não** é usado como cor primária naquela tela.
 
+## Arquitetura e decisões técnicas
+
+**O produto por trás do nome.** O `package.json` raiz descreve o projeto como
+"Prato — multi-tenant restaurant order-to-kitchen-to-payment SaaS": por baixo
+do ECRI Circus há uma plataforma pensada para várias marcas num só banco, não
+um sistema feito só para este evento. Isso explica escolhas que, vistas
+isoladamente para um evento único, pareceriam over-engineering — multi-tenancy,
+RLS, um context `table-session` inteiro (QR de mesa) que o ECRI não usa mais.
+
+**Multi-tenancy é invariante obrigatória, não um detalhe de implementação.**
+Cada tabela de negócio carrega `tenant_id`, e o isolamento tem três camadas
+redundantes de propósito (defesa em profundidade — ver
+[docs/tenancy.md](docs/tenancy.md)):
+1. um interceptor resolve `tenantId`/`locationId` do JWT (ou da sessão de QR) e
+   guarda em `AsyncLocalStorage`;
+2. um filtro global do MikroORM escopa toda query por `tenant_id` automaticamente;
+3. Row-Level Security no Postgres (ver [docs/rls.md](docs/rls.md)) — hoje **provada
+   mas não efetivada em produção**: a API conecta como superusuário (`ecri`), que
+   contorna RLS, então essa terceira camada existe como trava pronta, não ativa.
+
+O filtro do MikroORM é desenhado para falhar fechado: sem contexto de tenant, a
+condição vira `tenant = null` e a query não devolve nada — nunca "vê tudo" por
+omissão. Vazamento entre tenants é tratado como bug de severidade máxima
+(comentário no código: "P0 security bug").
+
+**Tempo real é gatilho de cache, não fonte de verdade.** O loop
+pedido→cozinha→pagamento é orientado a eventos (`EventEmitter2` in-process no
+backend, `DomainEvent`: `item.fired`, `item.preparing`, `item.ready`,
+`order.updated`, `order.paid`) publicados via Socket.IO. O Redis adapter existe
+porque a API pode rodar em várias instâncias atrás de um load balancer — sem
+pub/sub compartilhado, um evento emitido numa instância nunca chegaria a um
+socket conectado noutra. Mas o socket nunca carrega o dado em si: ele só avisa
+o cliente para invalidar a query certa do TanStack Query, que então busca o
+estado atual via REST. Ver [docs/event-contracts.md](docs/event-contracts.md)
+para o mapa completo de eventos e salas.
+
+**"Uma conta por pessoa" em vez de sessão de mesa.** O backend ainda tem um
+context inteiro para QR de mesa (`table-session`), herdado da base genérica —
+mas o ECRI Circus não usa esse fluxo: não há mesa fixa nem crachá de sessão. A
+conta é identificada pelo nome que a pessoa informa, comparado sem diferenciar
+maiúsculas/espaços (é digitado à mão a cada pedido), e cada pedido novo de quem
+já tem conta aberta cai nela — a conta é da pessoa, não da compra.
+
+**Contexts do backend** (`apps/api/src/contexts/`): `catalog`, `order`,
+`kitchen`, `payment`, `table-session`, `tenancy`. `auth` fica fora de
+`contexts/` de propósito — é tratado como infraestrutura transversal (JWT,
+guards), não domínio de negócio.
+
+**"Polyrepo-in-folder"**: cada app tem seu próprio `package.json` e
+`node_modules`, sem workspace pnpm compartilhado — a raiz é só orquestração
+(`tools/dev.mjs`, `check-all.sh`). Permite versionar e implantar cada app
+independentemente; o trade-off (nenhuma dependência compartilhada entre apps,
+mesmo utilitário duplicado quando os dois precisam dele) é aceito
+deliberadamente.
+
+**O que não está documentado em lugar nenhum do código**, para não fingir
+racional onde não há: por que MikroORM em vez de Prisma/TypeORM, e por que
+eventos in-process em vez de uma fila externa. Ambas funcionam bem no porte
+atual (evento único, baixa latência desejada, sem necessidade de retry entre
+processos), mas essa é leitura da implementação, não uma decisão registrada.
+
 ## Convenções (padrão Avenir)
 
 React 19 (sem memo manual — React Compiler) · TanStack Router/Query · Tailwind 4
 com tokens semânticos · Biome (proíbe `any`/`as`/`!`) · Conventional Commits ·
-só Playwright · SonarQube 70% em código novo. Multi-tenancy é invariante
-obrigatória (ver [docs/tenancy.md](docs/tenancy.md)).
+só Playwright · SonarQube 70% em código novo.
 
 ## Publicar na VM
 
