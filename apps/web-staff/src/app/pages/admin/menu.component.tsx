@@ -81,7 +81,7 @@ export function MenuAdminComponent() {
               ) : (
                 <ul className="divide-y divide-border">
                   {cat.items.map((mi) => (
-                    <ItemRow key={mi.id} item={mi} />
+                    <ItemRow key={mi.id} item={mi} categories={categories ?? []} />
                   ))}
                 </ul>
               )}

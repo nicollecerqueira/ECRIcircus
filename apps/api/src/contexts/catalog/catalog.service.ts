@@ -174,6 +174,7 @@ export class CatalogService {
       name?: string;
       priceCents?: number;
       available?: boolean;
+      categoryId?: string;
       stationId?: string;
       isCombo?: boolean;
       comboItems?: string;
@@ -200,6 +201,15 @@ export class CatalogService {
     }
     if (patch.available !== undefined) {
       item.available = patch.available;
+    }
+    if (patch.categoryId !== undefined) {
+      // Filtro global escopa também a busca da categoria: sem isto, um item
+      // poderia ser realocado para a categoria de outro tenant só por saber o id.
+      const category = await this.em.findOne(Category, { id: patch.categoryId });
+      if (!category) {
+        throw new NotFoundException('Categoria não encontrada');
+      }
+      item.category = category;
     }
     if (patch.stationId !== undefined) {
       item.stationId = patch.stationId;

@@ -43,6 +43,8 @@ export function useUpdateMenuItem() {
       name?: string;
       priceCents?: number;
       available?: boolean;
+      categoryId?: string;
+      stationId?: string;
       isCombo?: boolean;
       comboItems?: string;
       /** `null` remove a promoção; `undefined` deixa como está. */

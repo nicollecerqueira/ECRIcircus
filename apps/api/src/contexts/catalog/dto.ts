@@ -56,6 +56,10 @@ export class UpdateMenuItemDto {
 
   @IsOptional()
   @IsString()
+  categoryId?: string;
+
+  @IsOptional()
+  @IsString()
   stationId?: string;
 
   @IsOptional()
