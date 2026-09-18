@@ -1,31 +1,23 @@
-import { Link } from '@tanstack/react-router';
-import { useSession } from '../../core/session.store';
 import { Art, Attractions } from '../../shared/components/art';
 import {
   Badge,
-  Button,
   Card,
   EmptyState,
   Kicker,
   PosterHeading,
   Spinner,
   StarDivider,
-  TentStripes,
 } from '../../shared/components/ui';
 import { formatCents } from '../../shared/utils/money';
 import { useMenu } from '../order/order.service';
 
 export function MenuComponent() {
   const { data: menu, isPending } = useMenu();
-  const cart = useSession((s) => s.cart);
-  const addToCart = useSession((s) => s.addToCart);
 
   if (isPending || !menu) {
     return <Spinner />;
   }
 
-  const cartCount = cart.reduce((n, c) => n + c.qty, 0);
-  const cartTotal = cart.reduce((sum, c) => sum + c.priceCents * c.qty, 0);
   const categories = menu.categories.filter((cat) => cat.items.length > 0);
 
   return (
@@ -76,23 +68,6 @@ export function MenuComponent() {
                         <p className="text-sm text-muted">{formatCents(mi.priceCents)}</p>
                       )}
                     </div>
-                    <Button
-                      disabled={!mi.available}
-                      className="shrink-0"
-                      onClick={() =>
-                        addToCart({
-                          menuItemId: mi.id,
-                          name: mi.name,
-                          // Preço que o cliente paga agora (promocional, se houver). O
-                          // servidor recongela isto ao lançar; aqui é só o que ele vê.
-                          priceCents: mi.effectivePriceCents,
-                          qty: 1,
-                          notes: mi.isCombo ? mi.comboItems : undefined,
-                        })
-                      }
-                    >
-                      Adicionar
-                    </Button>
                   </Card>
                 ))}
               </div>
@@ -108,24 +83,6 @@ export function MenuComponent() {
         <Kicker>Atrações da casa</Kicker>
         <Attractions className="mt-4" />
       </div>
-
-      {/* `sticky`, não `fixed`: fixo, a barra flutua sobre a página inteira e
-          cobre o rodapé. Como último filho e grudada em `bottom-0`, ela fica
-          colada na base da tela enquanto se rola o cardápio e assenta no fim do
-          conteúdo — sem nunca passar por cima do rodapé. */}
-      {cartCount > 0 && (
-        <div className="sticky bottom-0 -mx-4 mt-8 bg-surface">
-          <TentStripes />
-          <div className="p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-            <Link to="/cart" className="block">
-              <Button className="w-full">
-                🎟️ Ver carrinho · {cartCount} {cartCount === 1 ? 'item' : 'itens'} ·{' '}
-                {formatCents(cartTotal)}
-              </Button>
-            </Link>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

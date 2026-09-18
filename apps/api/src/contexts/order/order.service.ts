@@ -18,7 +18,6 @@ export interface CreateOrderInput {
   tableId?: string;
   customerName?: string;
   teamName?: string;
-  deliveryRoom?: string;
   paymentIntent?: PaymentIntent;
   cashNeedsChange?: boolean;
   cashChangeForCents?: number;
@@ -43,7 +42,6 @@ function toOrderView(o: OrderEntity): Order {
     tableId: o.tableId ?? undefined,
     customerName: o.customerName ?? undefined,
     teamName: o.teamName ?? undefined,
-    deliveryRoom: o.deliveryRoom ?? undefined,
     paymentIntent: o.paymentIntent ?? undefined,
     cashNeedsChange: o.cashNeedsChange ?? undefined,
     cashChangeForCents: o.cashChangeForCents ?? undefined,
@@ -61,7 +59,6 @@ function toOrderView(o: OrderEntity): Order {
         state: i.state,
         notes: i.notes ?? undefined,
         voidReason: i.voidReason ?? undefined,
-        deliveryRoom: i.deliveryRoom ?? undefined,
         createdAt: i.createdAt.toISOString(),
       })),
     payments: o.payments
@@ -158,19 +155,14 @@ export class OrderService {
               ? input.cashChangeForCents
               : undefined;
         }
-        // Idem para a sala: a pessoa circula, e a entrega tem de ir para onde
-        // ela está AGORA, não para onde estava no primeiro pedido.
-        if (input.deliveryRoom?.trim()) {
-          existing.deliveryRoom = input.deliveryRoom.trim();
-        }
         // Equipe informada depois preenche a que faltava, mas nunca sobrescreve
         // uma já registrada — quem abriu a conta é quem sabe.
         existing.teamName ??= input.teamName?.trim() || undefined;
         this.touch(existing);
         await this.em.flush();
-        // Este caminho era MUDO: a sala e a forma de pagamento mudavam no banco
-        // e nenhuma tela ficava sabendo até o próximo refetch. É o caso mais
-        // comum de todos — a pessoa já tem conta aberta e pede de novo pelo app.
+        // Este caminho era MUDO: a forma de pagamento mudava no banco e nenhuma
+        // tela ficava sabendo até o próximo refetch. É o caso mais comum de
+        // todos — a pessoa já tem conta aberta e pede de novo.
         this.emitUpdated(existing);
         return this.viewOf(existing);
       }
@@ -184,7 +176,6 @@ export class OrderService {
       tableId: input.tableId,
       customerName: name || undefined,
       teamName: input.teamName?.trim() || undefined,
-      deliveryRoom: input.deliveryRoom?.trim() || undefined,
       paymentIntent: input.paymentIntent,
       cashNeedsChange: input.paymentIntent === 'cash' ? input.cashNeedsChange : undefined,
       cashChangeForCents:
@@ -237,9 +228,6 @@ export class OrderService {
       stationId: menuItem.stationId,
       state: preparar ? 'queued' : 'served',
       notes: input.notes,
-      // Cópia da sala VIGENTE. Se a pessoa mudar de sala e pedir de novo, este
-      // item continua apontando para onde ela estava quando pediu.
-      deliveryRoom: order.deliveryRoom,
       createdAt: new Date(),
     });
     order.items.add(item);

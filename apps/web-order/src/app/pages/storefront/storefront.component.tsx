@@ -11,7 +11,7 @@ import {
 import { formatCents } from '../../shared/utils/money';
 import { useMenu } from '../order/order.service';
 
-/** Public delivery storefront (`/d/$slug`). First-party delivery, no table. */
+/** Vitrine de cardápio por marca (`/d/$slug`). Só leitura, sem carrinho. */
 export function StorefrontComponent() {
   const { slug } = useParams({ from: '/d/$slug' });
   // O slug da URL (/d/$slug) identifica a marca no cardápio público.
@@ -25,11 +25,11 @@ export function StorefrontComponent() {
     <div className="mx-auto max-w-lg p-4">
       <header className="mb-5 pt-6 text-center">
         <Art name="tent" size="xl" fallback="🎪" />
-        <Kicker>Entrega própria</Kicker>
+        <Kicker>Cardápio</Kicker>
         <h1 className="circus-title mt-1 text-3xl font-bold capitalize">
           {slug.replace(/-/g, ' ')}
         </h1>
-        <p className="text-muted">Faça seu pedido online</p>
+        <p className="text-muted">Confira o que temos disponível</p>
         <StarDivider className="my-4" />
       </header>
       <div className="space-y-5">

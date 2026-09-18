@@ -83,8 +83,6 @@ export function CheckoutComponent() {
                 : 'Sem troco'}
             </p>
           )}
-          {/* A sala saiu das telas do balcão: quem fecha a conta tem a pessoa
-              na frente. Ela segue na comanda do KDS, de quem leva o pedido. */}
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1">
           <Badge tone="primary">{ORDER_STATUS_LABEL[order.status] ?? order.status}</Badge>

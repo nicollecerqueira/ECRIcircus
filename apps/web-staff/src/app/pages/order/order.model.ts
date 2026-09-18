@@ -34,8 +34,6 @@ export const orderSchema = z.object({
   customerName: optionalText,
   /** Equipe da pessoa (ARCO-ÍRIS, BANDINHA, …). */
   teamName: optionalText,
-  /** Sala onde a pessoa está — destino da entrega. */
-  deliveryRoom: optionalText,
   /** Forma de pagamento declarada pelo cliente no app. */
   paymentIntent: z.enum(['pix', 'cash', 'card', 'account']).optional(),
   /** Em dinheiro, informa se o cliente pediu troco. */
@@ -135,12 +133,6 @@ export const ORDER_STATUS_LABEL: Record<string, string> = {
     conta sem equipe visível parece conta sem equipe cadastrada. */
 export function teamLabel(order: Pick<Order, 'teamName'>): string {
   return order.teamName?.trim() || 'Equipe não informada';
-}
-
-/** Destino da entrega. Também nunca vazio — quem leva precisa saber que a
-    informação FALTA, e não achar que a linha simplesmente não existe. */
-export function roomLabel(order: Pick<Order, 'deliveryRoom'>): string {
-  return order.deliveryRoom?.trim() || 'Sala não informada';
 }
 
 export const PAYMENT_INTENT_LABEL: Record<string, string> = {

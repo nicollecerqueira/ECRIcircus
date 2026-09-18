@@ -231,10 +231,6 @@ function AccountCard({
         <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-accent">
           {teamLabel(order)}
         </p>
-        {/* A sala saiu daqui: no salão a conta é procurada por nome e equipe, e
-            uma linha a mais em cada cartão (quase sempre "não informada") só
-            afastava o que interessa. Ela continua onde é usada de fato — no
-            detalhe do pedido e na comanda da cozinha, que é quem entrega. */}
         <p className="mt-2 text-sm text-muted">{itemSummary(order)}</p>
         <p className="mt-1 font-semibold">{formatCents(orderTotalCents(order))}</p>
       </Card>

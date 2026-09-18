@@ -18,9 +18,8 @@ export const ticketSchema = z.object({
   tableId: optionalText,
   /** Rótulo humano já resolvido pelo servidor (ex.: "Mesa 3"). */
   tableLabel: optionalText,
-  /** Para quem e para onde vai o prato — o que quem entrega precisa ler. */
+  /** Para quem vai o prato — o que quem entrega precisa ler. */
   customerName: optionalText,
-  deliveryRoom: optionalText,
   channel: z.string(),
   itemId: z.string(),
   name: z.string(),
@@ -43,7 +42,6 @@ export const kitchenOrderSchema = z.object({
   tableId: optionalText,
   tableLabel: optionalText,
   customerName: optionalText,
-  deliveryRoom: optionalText,
   channel: z.string(),
   firedAt: z.string(),
   tickets: ticketSchema.array(),

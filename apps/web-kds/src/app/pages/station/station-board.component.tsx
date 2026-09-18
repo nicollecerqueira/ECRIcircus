@@ -116,16 +116,8 @@ function OrderCard({
             Pedido #{order.orderId.slice(0, 8)}
           </p>
           <h2 className="break-words text-2xl font-bold">{title}</h2>
-          {/* A sala é a DESTE pedido, capturada quando ele foi feito — a pessoa
-              pode ter pedido de novo de outra sala depois. */}
           <p className="mt-1 text-base font-semibold">
-            {order.deliveryRoom ? (
-              <>
-                <span aria-hidden>🚩</span> {order.deliveryRoom}
-              </>
-            ) : (
-              (order.tableLabel ?? CHANNEL_LABEL[order.channel] ?? order.channel)
-            )}
+            {order.tableLabel ?? CHANNEL_LABEL[order.channel] ?? order.channel}
           </p>
         </div>
         <div className="shrink-0 text-right">

@@ -46,14 +46,6 @@ export class OrderItem {
   @Property({ length: 240, nullable: true })
   voidReason?: string;
 
-  /**
-   * Sala de entrega no instante do lançamento. A pessoa circula e a sala da
-   * CONTA muda com ela; sem esta cópia, o pedido que já está na cozinha passaria
-   * a apontar para onde ela está agora. Nulo nos itens anteriores a esta regra.
-   */
-  @Property({ length: 120, nullable: true })
-  deliveryRoom?: string;
-
   @Property({ type: 'timestamptz', defaultRaw: 'now()' })
   createdAt: Date = new Date();
 }

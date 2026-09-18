@@ -44,12 +44,9 @@ export class KitchenService {
             orderId: order.id,
             tableId: order.tableId,
             channel: order.channel,
-            // Quem entrega lê a comanda: sem nome e sala, o prato fica pronto
-            // sem ninguém saber para onde levá-lo.
+            // Quem entrega lê a comanda: sem nome, o prato fica pronto sem
+            // ninguém saber de quem é.
             customerName: order.customerName,
-            // A sala do ITEM (capturada no lançamento) manda; a da conta é só
-            // reserva para itens antigos, anteriores a essa captura.
-            deliveryRoom: i.deliveryRoom ?? order.deliveryRoom,
             itemId: i.id,
             name: i.name,
             qty: i.qty,
@@ -81,7 +78,6 @@ export class KitchenService {
           tableId: first.tableId,
           tableLabel: first.tableLabel,
           customerName: first.customerName,
-          deliveryRoom: first.deliveryRoom,
           channel: first.channel,
           firedAt: first.firedAt,
           tickets: loteTickets,
@@ -97,12 +93,9 @@ export class KitchenService {
    * Não existe "id do pedido" no banco: a conta é uma só e cada item entra por
    * uma chamada separada. O que separa um pedido do outro é o intervalo — os
    * itens de um mesmo carrinho entram em sequência, em segundos; o pedido
-   * seguinte vem minutos depois. Uma troca de sala também abre lote novo, ainda
-   * que colada no tempo: destino diferente é entrega diferente.
+   * seguinte vem minutos depois.
    */
-  private agruparEmPedidos<T extends { orderId: string; firedAt: string; deliveryRoom?: string }>(
-    tickets: T[],
-  ): T[][] {
+  private agruparEmPedidos<T extends { orderId: string; firedAt: string }>(tickets: T[]): T[][] {
     /** Silêncio que encerra um pedido. Acima disto, o próximo item é outro. */
     const INTERVALO_MS = 90_000;
     const lotes: T[][] = [];
@@ -115,8 +108,7 @@ export class KitchenService {
         const distante =
           anterior !== undefined &&
           new Date(ticket.firedAt).getTime() - new Date(anterior.firedAt).getTime() > INTERVALO_MS;
-        const outraSala = anterior !== undefined && anterior.deliveryRoom !== ticket.deliveryRoom;
-        if (anterior !== undefined && (distante || outraSala)) {
+        if (anterior !== undefined && distante) {
           lotes.push(atual);
           atual = [];
         }

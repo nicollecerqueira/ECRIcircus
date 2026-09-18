@@ -25,12 +25,6 @@ export class CreateOrderDto {
   @MaxLength(60)
   teamName?: string;
 
-  /** Sala onde a pessoa está — destino da entrega. */
-  @IsOptional()
-  @IsString()
-  @MaxLength(60)
-  deliveryRoom?: string;
-
   /** Forma de pagamento declarada no app. `account` faz o pedido cair na conta
       já aberta da pessoa, em vez de abrir outra. */
   @IsOptional()

@@ -50,10 +50,6 @@ export class Order {
   @Property({ length: 60, nullable: true })
   teamName?: string;
 
-  /** Sala da equipe onde a pessoa está — o destino da entrega. */
-  @Property({ length: 60, nullable: true })
-  deliveryRoom?: string;
-
   /** Forma de pagamento declarada pelo cliente no app (intenção, não pagamento). */
   @Property({ length: 12, nullable: true })
   paymentIntent?: PaymentIntent;

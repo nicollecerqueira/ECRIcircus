@@ -1,14 +1,13 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
 import { router } from './app.routes';
-import { initRealtime } from './core/realtime.service';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5000, retry: 1 } },
 });
 
-// No auth bootstrap here — the diner session comes from scanning the QR.
-initRealtime(queryClient);
+// web-order é só vitrine: sem carrinho, sem pedido próprio a acompanhar, não
+// há mais razão para abrir um socket em tempo real.
 
 export function App() {
   return (

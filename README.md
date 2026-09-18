@@ -1,43 +1,40 @@
 # ECRI Circus
 
-Sistema de pedidos do evento **ECRI Circus**: a pessoa pede pelo celular, o
-pedido cai na cozinha em tempo real e é **entregue na sala da equipe dela**. No
-fim, a conta é acertada no caixa.
+Sistema de pedidos do evento **ECRI Circus**: a equipe lança o pedido no
+balcão, ele cai na cozinha em tempo real e, no fim, a conta é acertada no
+caixa. O cliente só consulta o cardápio pelo celular — quem pede é sempre a
+equipe, presencialmente.
 
-Não há mesa, não há QR code e não há garçom levando comanda — o app abre direto
-no cardápio, e quem pede se identifica por **nome, equipe e sala**.
+Não há mesa, não há QR code e não há carrinho do cliente — o pedido nasce no
+balcão (`web-staff`), identificado por **nome e equipe**.
 
 ## Como funciona
 
 ```
-CLIENTE (:1020)                COZINHA (:1022)            EQUIPE (:1021)
-cardápio                        quadro de comandas          contas abertas
-   ↓ adiciona itens                 ↑ tempo real                ↓
-carrinho                        ┌───────────────┐           caixa
-   ↓ nome · equipe · sala       │ 2x Hambúrguer │              ↓
-   ↓ forma de pagamento    ───▶ │ 🚩 Sala 7     │ ──────▶  fechamento
-pedido enviado                  │    Ana Souza  │           (itens + total)
-   ↓                            └───────────────┘
-acompanha o preparo
-   ↓
-relatório no WhatsApp
+CLIENTE (:1020)     BALCÃO (:1021)              COZINHA (:1022)           EQUIPE (:1021)
+cardápio             abre conta                   quadro de comandas       contas abertas
+(só consulta)        ↓ nome · equipe                  ↑ tempo real             ↓
+                      ↓ adiciona itens           ┌───────────────┐          caixa
+                      ↓ forma de pagamento  ───▶ │ 2x Hambúrguer │ ──────▶     ↓
+                      pedido lançado              │    Ana Souza  │        fechamento
+                                                   └───────────────┘        (itens + total)
 ```
 
 **Uma conta por pessoa.** Todo pedido de quem já tem conta aberta é somado nela,
 comparando o nome sem diferenciar maiúsculas nem espaços. Sem isso, cada pedido
 viraria uma conta nova com o mesmo nome e o caixa cobraria pedaços soltos.
 
-**A forma de pagamento é uma declaração, não uma cobrança.** O cliente diz como
-pretende pagar — Pix, dinheiro (com ou sem troco), cartão ou **colocar na
-conta** — e quem registra o pagamento de fato é o caixa. "Na conta" é o pedido
-que fica em aberto para acertar depois.
+**A forma de pagamento é uma declaração, não uma cobrança.** A equipe registra
+como a pessoa pretende pagar — Pix, dinheiro (com ou sem troco), cartão ou
+**colocar na conta** — e quem registra o pagamento de fato é o caixa. "Na
+conta" é o pedido que fica em aberto para acertar depois.
 
 ## As três aplicações
 
 | app | porta | para quem | o que faz |
 | --- | --- | --- | --- |
-| `web-order` | **1020** | quem pede | cardápio, carrinho, acompanhamento do pedido |
-| `web-staff` | **1021** | equipe | contas abertas · caixa · cardápio |
+| `web-order` | **1020** | quem consulta | cardápio público — itens, preços e promoções, só leitura |
+| `web-staff` | **1021** | equipe | abre contas, lança pedidos, contas abertas, caixa, cardápio |
 | `web-kds` | **1022** | cozinha | quadro de comandas por estação, em tempo real |
 | `api` | 3000 | — | REST + WebSocket (os apps chamam via proxy próprio) |
 
@@ -85,8 +82,8 @@ docker compose -f docker-compose.dev.yml up -d
 
 # 2) cada app é independente — instale por app
 (cd apps/api        && cp .env.example .env && pnpm install && pnpm dev)  # :3000
-(cd apps/web-order  && pnpm install && pnpm dev)                          # :1020
-(cd apps/web-staff  && pnpm install && pnpm dev)                          # :1021
+(cd apps/web-order  && pnpm install && pnpm dev)                          # :1020 (cardápio)
+(cd apps/web-staff  && pnpm install && pnpm dev)                          # :1021 (balcão)
 (cd apps/web-kds    && pnpm install && pnpm dev)                          # :1022
 ```
 
@@ -116,16 +113,16 @@ Contas de demonstração (senha `ecri123`):
 
 ## Experimentar o fluxo completo
 
-1. **Cliente** (`:1020`) → escolha itens → carrinho → informe **nome completo,
-   equipe e sala** → escolha a forma de pagamento → enviar.
-2. **Cozinha** (`:1022`) → login `kitchen@ecricircus.app` → escolha a estação →
-   a comanda aparece com **🚩 sala e nome** → toque para `preparando` / `pronto`.
-3. **Equipe** (`:1021`) → login `waiter@ecricircus.app` → **Contas abertas**
-   mostra a conta da pessoa, com equipe e total.
+1. **Cliente** (`:1020`) → confere o cardápio, preços e promoções. Só leitura —
+   quem quiser pedir procura a equipe.
+2. **Equipe** (`:1021`) → login `waiter@ecricircus.app` → **Salão** → abre conta
+   com **nome e equipe** → adiciona itens → registra a forma de pagamento.
+3. **Cozinha** (`:1022`) → login `kitchen@ecricircus.app` → escolha a estação →
+   a comanda aparece com **nome do cliente** → toque para `preparando` / `pronto`.
 4. **Caixa** (`:1021/pos`) → abra a conta → o fechamento lista **item a item** o
    que foi consumido → registre o pagamento.
 
-Peça duas vezes com o mesmo nome: os pedidos entram na **mesma conta**.
+Lance dois pedidos com o mesmo nome: eles entram na **mesma conta**.
 
 ## Detalhes que não são óbvios pelo código
 
@@ -133,15 +130,8 @@ Peça duas vezes com o mesmo nome: os pedidos entram na **mesma conta**.
 `requiresPreparation: false`: entra na conta e no relatório de vendas, mas
 **não vira comanda na cozinha**.
 
-**As equipes são uma lista fixa no front**, duplicada nos dois apps
-(`web-order/src/app/shared/teams.ts` e
-`web-staff/src/app/pages/floor/teams.ts`) porque não há pacote compartilhado.
-Ao mexer numa, mexa na outra.
-
-**O relatório do WhatsApp** é um link `wa.me` que o cliente toca ao fim do
-pedido, com itens, total, equipe, sala e forma de pagamento. O número vem de
-`VITE_WHATSAPP_NUMERO` (ver `apps/web-order/.env.example`); vazio, a tela mostra
-o texto para copiar em vez de um link quebrado.
+**As equipes são uma lista fixa no front** (`web-staff/src/app/pages/floor/teams.ts`),
+usada onde o pedido nasce — no balcão.
 
 **A cor no painel da cozinha é funcional**, não decorativa: verde → âmbar →
 vermelho marcam o envelhecimento da comanda, e por isso o vermelho da marca

@@ -39,11 +39,11 @@ export function AppComponent() {
             <span aria-hidden className="text-gold">
               ★
             </span>{' '}
-            {/* "Retire no balcão" era do desenho antigo. A operação entrega na
-                sala — é por isso que o app pede a sala no fechamento. */}
+            {/* O app é só vitrine: confira o cardápio aqui, e peça direto com
+                a equipe no balcão. */}
             ECRI Circus
             <br />
-            peça, receba na sua sala e aproveite o espetáculo{' '}
+            confira o cardápio e peça com a equipe no balcão{' '}
             <span aria-hidden className="text-gold">
               ★
             </span>

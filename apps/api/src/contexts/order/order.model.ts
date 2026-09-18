@@ -42,8 +42,6 @@ export interface OrderItem {
   state: ItemState;
   notes?: string;
   voidReason?: string;
-  /** Sala capturada no lançamento — o destino DESTE pedido, não o atual da conta. */
-  deliveryRoom?: string;
   /** Instante do lançamento. É por ele que a cozinha separa um pedido do outro. */
   createdAt: string;
 }
@@ -66,8 +64,6 @@ export interface Order {
   customerName?: string;
   /** Equipe a que a pessoa pertence. */
   teamName?: string;
-  /** Sala onde a pessoa está — é para onde o pedido é levado. */
-  deliveryRoom?: string;
   /** Como o cliente declarou que vai pagar (ver `PaymentIntent`). */
   paymentIntent?: PaymentIntent;
   /** Em dinheiro, informa se o cliente pediu troco. */

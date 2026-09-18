@@ -58,9 +58,6 @@ export function OrderComponent() {
                   : 'Sem troco'}
               </p>
             )}
-            {/* A sala não aparece nas telas do balcão (aqui nem no salão): quem
-                atende tem a pessoa na frente. Ela segue na comanda do KDS, que
-                é de quem leva o pedido até a sala. */}
           </div>
           <Badge tone="primary">{ORDER_STATUS_LABEL[order.status] ?? order.status}</Badge>
         </div>
