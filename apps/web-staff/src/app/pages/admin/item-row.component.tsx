@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Badge, Button, IconButton } from '../../shared/components/ui';
 import { formatCents } from '../../shared/utils/money';
 import type { MenuItem } from '../order/order.model';
-import { type Category, centsToPrice, priceToCents, STATIONS } from './admin.model';
+import { type Category, centsToPrice, priceToCents } from './admin.model';
 import { useDeleteMenuItem, useUpdateMenuItem } from './admin.service';
 
 /** Ícone base 16px, traço em currentColor — herda a cor do IconButton. */
@@ -61,9 +61,9 @@ const TrashIcon = () => (
 );
 
 /**
- * Linha do cardápio com edição inline (nome/preço/categoria/estação) e
- * controle de promoção. Inline em vez de modal: o gerente costuma ajustar
- * vários itens em sequência, e modal a cada item vira clique demais.
+ * Linha do cardápio com edição inline (nome/preço/categoria) e controle de
+ * promoção. Inline em vez de modal: o gerente costuma ajustar vários itens em
+ * sequência, e modal a cada item vira clique demais.
  */
 export function ItemRow({ item, categories }: { item: MenuItem; categories: Category[] }) {
   const [editing, setEditing] = useState(false);
@@ -74,7 +74,6 @@ export function ItemRow({ item, categories }: { item: MenuItem; categories: Cate
   const [name, setName] = useState(item.name);
   const [price, setPrice] = useState(centsToPrice(item.priceCents));
   const [categoryId, setCategoryId] = useState(item.categoryId ?? '');
-  const [stationId, setStationId] = useState(item.stationId);
   const [isCombo, setIsCombo] = useState(item.isCombo);
   const [comboItems, setComboItems] = useState(item.comboItems ?? '');
   const [promoPrice, setPromoPrice] = useState(
@@ -89,7 +88,6 @@ export function ItemRow({ item, categories }: { item: MenuItem; categories: Cate
         name,
         priceCents: priceToCents(price),
         categoryId,
-        stationId,
         isCombo,
         comboItems,
       },
@@ -139,17 +137,6 @@ export function ItemRow({ item, categories }: { item: MenuItem; categories: Cate
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
-              </option>
-            ))}
-          </select>
-          <select
-            value={stationId}
-            onChange={(e) => setStationId(e.target.value)}
-            className="rounded-lg border border-border bg-surface px-2 py-1 text-sm"
-          >
-            {STATIONS.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
               </option>
             ))}
           </select>
