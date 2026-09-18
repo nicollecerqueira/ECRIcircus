@@ -13,22 +13,25 @@ export function MenuAdminComponent() {
   const { data: categories } = useCategories();
   const createItem = useCreateMenuItem();
 
+  const defaultValues: MenuItemForm = {
+    name: '',
+    price: '',
+    categoryId: '',
+    stationId: STATIONS[0].id,
+    isCombo: false,
+    comboItems: '',
+    semPreparo: false,
+  };
+
   const {
     register,
     handleSubmit,
     reset,
+    getValues,
     formState: { errors },
   } = useForm<MenuItemForm>({
     resolver: zodResolver(menuItemFormSchema),
-    defaultValues: {
-      name: '',
-      price: '',
-      categoryId: '',
-      stationId: STATIONS[0].id,
-      isCombo: false,
-      comboItems: '',
-      semPreparo: false,
-    },
+    defaultValues,
   });
 
   const onSubmit = handleSubmit((values) => {
@@ -43,10 +46,17 @@ export function MenuAdminComponent() {
         requiresPreparation: !values.semPreparo,
       },
       {
+        // Lê os valores NA HORA do sucesso (getValues), não os capturados no
+        // fechamento do submit: a resposta da rede pode demorar, e nesse
+        // intervalo a pessoa já pode ter mudado categoria/estação para o
+        // próximo item. Resetar com o closure antigo apagava essa escolha e
+        // deixava o formulário num estado que parecia preenchido na tela mas
+        // que o RHF via como divergente do que tinha sido validado — daí o
+        // "informe nome e preço" mesmo com os campos visivelmente cheios.
         onSuccess: () =>
           // A categoria, a estação e "sem preparo" ficam: quem cadastra fichas
           // cadastra várias seguidas, e refazer a escolha a cada uma é atrito.
-          reset({ ...values, name: '', price: '', isCombo: false, comboItems: '' }),
+          reset({ ...getValues(), name: '', price: '', isCombo: false, comboItems: '' }),
       },
     );
   });
