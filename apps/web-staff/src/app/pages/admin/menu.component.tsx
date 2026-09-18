@@ -1,17 +1,20 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Art } from '../../shared/components/art';
 import { Button, Card, Spinner } from '../../shared/components/ui';
 import { FormField } from '../../shared/form-field';
 import { useMenu } from '../order/order.service';
 import { type MenuItemForm, menuItemFormSchema, priceToCents, STATIONS } from './admin.model';
-import { useCategories, useCreateMenuItem } from './admin.service';
+import { useCategories, useCreateCategory, useCreateMenuItem } from './admin.service';
 import { ItemRow } from './item-row.component';
 
 export function MenuAdminComponent() {
   const { data: menu, isPending } = useMenu();
   const { data: categories } = useCategories();
   const createItem = useCreateMenuItem();
+  const createCategory = useCreateCategory();
+  const [newCategoryName, setNewCategoryName] = useState('');
 
   const defaultValues: MenuItemForm = {
     name: '',
@@ -28,11 +31,27 @@ export function MenuAdminComponent() {
     handleSubmit,
     reset,
     getValues,
+    setValue,
     formState: { errors },
   } = useForm<MenuItemForm>({
     resolver: zodResolver(menuItemFormSchema),
     defaultValues,
   });
+
+  const onCreateCategory = () => {
+    const name = newCategoryName.trim();
+    if (!name) {
+      return;
+    }
+    createCategory.mutate(name, {
+      onSuccess: (created) => {
+        setNewCategoryName('');
+        // Categoria criada já entra selecionada: quem digitou "Almoço" aqui
+        // quase sempre vai cadastrar o primeiro item dela em seguida.
+        setValue('categoryId', created.id);
+      },
+    });
+  };
 
   const onSubmit = handleSubmit((values) => {
     createItem.mutate(
@@ -144,6 +163,29 @@ export function MenuAdminComponent() {
                 <span className="mt-1 block text-xs text-danger">{errors.categoryId.message}</span>
               )}
             </label>
+
+            {/* Categoria nova sem sair do fluxo de cadastrar item: antes só
+                dava para criar categoria direto na API. */}
+            <div className="flex items-center gap-2">
+              <input
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder="Nova categoria (ex.: Almoço)"
+                className="min-w-0 flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg outline-none focus:border-primary"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                className="shrink-0 px-3 py-2 text-sm"
+                disabled={createCategory.isPending || !newCategoryName.trim()}
+                onClick={onCreateCategory}
+              >
+                {createCategory.isPending ? 'Criando…' : 'Criar'}
+              </Button>
+            </div>
+            {createCategory.isError && (
+              <p className="text-xs text-danger">Não foi possível criar a categoria.</p>
+            )}
 
             <label className="block">
               <span className="mb-1 block text-sm font-medium text-fg">Estação</span>

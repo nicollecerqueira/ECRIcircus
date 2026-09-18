@@ -12,6 +12,24 @@ export function useCategories() {
   });
 }
 
+export function useCreateCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (name: string) => {
+      const { data } = await apiClient.post<Category>('/admin/categories', { name });
+      return categorySchema.parse(data);
+    },
+    // Categoria nova entra sem item — só o cardápio (['menu']) mostra os
+    // cards por categoria, então precisa invalidar os dois: ['categories']
+    // para o select de "Novo item" oferecer a opção, ['menu'] para o card
+    // vazio da categoria aparecer na lista à esquerda.
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['categories'] });
+      qc.invalidateQueries({ queryKey: ['menu'] });
+    },
+  });
+}
+
 export function useCreateMenuItem() {
   const qc = useQueryClient();
   return useMutation({
